@@ -217,20 +217,21 @@ module datapath(
 		end
 		else
 		begin
-			if (match_the_card)
-			begin
-				otp <= 6'b111111;
-
-			end
-			else if (card1)
+			
+			if (card1)
 			begin
 				otp <= 6'b000001;
 				c1 <= TEMP_match;
 			end
-			else if (card2)
+			if (card2)
 			begin
 				otp <= 6'b10000;
 				c2 <= TEMP_match;
+			end
+			if (match_the_card)
+			begin
+				otp <= 6'b111111;
+
 			end
 			
 		end
