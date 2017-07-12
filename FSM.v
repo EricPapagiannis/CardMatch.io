@@ -94,9 +94,26 @@ module FinalB58
    .card1(card1), 
 	.card2(card2)
 	);
-	
+
+    FSM_Players p0(.clk(CLOCK_50),
+    .resetn(KEY[0]),
+    .go(out),
+   .player(player)
+	);
+
+    FSM_Joystick j0(.clk(CLOCK_50),
+    .resetn(KEY[0]),
+    .go(SW[18:15]),
+   .can_move(can_move)
+	);
+
+	// NEED A DATAPATH FOR THE JOYSTICK COORDINATE - send coordinate into FSM_cards
+
+
+   wire can_move;
    reg out;
-	always@(*)
+   wire [1:0] player = 2'b01;
+	always@(posedge CLOCK_50)
 	begin
 		if (tc1 == tc2)
 		begin
@@ -107,10 +124,230 @@ module FinalB58
 			out <= 1'b0;
 		end
 	end
-	
+	assign LEDG[1:0] = player;
 	assign LEDR[9] = out;
 endmodule
 
+module FSM_Cards(
+    input clk,
+    input resetn,
+    input go,
+    input matching, // Used to determine if the fsm is in the matching state; if so dont do anything until it is finished
+    //output reg writeEn,
+    //output reg  ld_x, ld_y
+    output reg  is_match;
+    );
+
+    reg [6:0] current_state, next_state; 
+    
+    localparam  card0        = 4'd1,
+		card1        = 4'd2,
+		card2        = 4'd3,
+		card3        = 4'd4,
+		card4        = 4'd5,
+		card5        = 4'd6,
+		card6        = 4'd7,
+		card7        = 4'd8,
+		card8        = 4'd1,
+		card9        = 4'd2,
+		card10       = 4'd3,
+		card11       = 4'd4,
+		card12       = 4'd5,
+		card13       = 4'd6,
+		card14       = 4'd7,
+		card15       = 4'd8,
+		card16       = 4'd9,
+		card17       = 4'd9;
+    
+    // Next state logic aka our state table
+    always@(*)
+    begin: state_table
+            case (current_state)
+
+		//State for Init
+		//State for choose card 1
+		//State for choose card 2
+		//State for match
+		//State for no match
+					 
+                card0: next_state = go ? choose_card1_wait : choose_card1; // Loop in current state until value is input
+				
+                choose_card1_wait: next_state = go ? choose_card1_wait : choose_card2; // Loop in current state until go signal goes low
+				
+                choose_card2: next_state = go ? choose_card2_wait : choose_card2; // Loop in current state until value is input
+				
+                choose_card2_wait: next_state = go ? choose_card2_wait : check_match; // Loop in current state until go signal goes low
+				
+                check_match: next_state = go ? check_match_wait : check_match; // Loop in current state until value is input
+					 
+		check_match_wait: next_state = go ? check_match_wait : choose_card1; // Loop in current state until value is input
+				
+                default:     next_state = choose_card1;
+        endcase
+    end // state_table
+   
+
+    // Output logic aka all of our datapath control signals
+    always @(*)
+    begin: enable_signals
+        // By default make all our signals 0
+        card1 = 1'b0;
+        card2 = 1'b0;
+        match_the_cards = 1'b0;
+
+        case (current_state)
+            choose_card1: begin
+                card1 = 1'b1;
+                end
+            choose_card2: begin
+                card2 = 1'b1;
+                end
+            check_match: begin
+                match_the_cards = 1'b1;
+                end
+        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        endcase
+    end // enable_signals
+   
+    // current_state registers
+    always@(posedge clk)
+    begin: state_FFs
+        if(!resetn)
+            current_state <= choose_card1;
+        else
+            current_state <= next_state;
+    end // state_FFS
+endmodule
+
+module FSM_Joystick(
+    input clk,
+    input resetn,
+    input [0:3] go,
+    input matching, // Used to determine if the fsm is in the matching state; if so dont do anything until it is finished
+    //output reg writeEn,
+    //output reg  ld_x, ld_y
+    output reg  can_move
+    );
+
+    reg [6:0] current_state, next_state; 
+    
+    localparam  idle        	= 4'd0,
+                move   		= 4'd1,
+                waitMove        = 4'd2;
+    
+    // Next state logic aka our state table
+    always@(*)
+    begin: state_table
+            case (current_state)
+
+		//State for Init
+		//State for choose card 1
+		//State for choose card 2
+		//State for match
+		//State for no match
+					 
+                idle: next_state = go > 1'b0 ? move : idle; // Loop in current state until value is input
+				
+                move: next_state = go > 1'b0 ? waitMove : move; // Loop in current state until go signal goes low
+				
+                waitMove: next_state = go > 1'b0 ? waitMove : idle; // Loop in current state until go signal goes low
+				
+                default:     next_state = idle;
+        endcase
+    end // state_table
+   
+
+    // Output logic aka all of our datapath control signals
+    always @(*)
+    begin: enable_signals
+        // By default make all our signals 0
+        move = 1'b0;
+
+        case (current_state)
+            idle: begin
+                //card1 = 1'b1;
+                end
+            move: begin
+                can_move = 1'b1;
+                end
+            waitMove: begin
+                //match_the_cards = 1'b1;
+                end
+        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        endcase
+    end // enable_signals
+   
+    // current_state registers
+    always@(posedge clk)
+    begin: state_FFs
+        if(!resetn)
+            current_state <= idle;
+        else
+            current_state <= next_state;
+    end // state_FFS
+endmodule
+
+module FSM_Players(
+    input clk,
+    input resetn,
+    input go,
+    //output reg writeEn,
+    //output reg  ld_x, ld_y
+    output reg [1:0] player
+    );
+
+    reg [6:0] current_state, next_state; 
+    
+    localparam  Player1        = 4'd0,
+                Player2        = 4'd1
+    
+    // Next state logic aka our state table
+    always@(*)
+    begin: state_table
+            case (current_state)
+
+		//State for Init
+		//State for choose card 1
+		//State for choose card 2
+		//State for match
+		//State for no match
+					 
+                Player1: next_state = go ? Player1 : Player2; // Loop in current state until value is input
+				
+                Player2: next_state = go ? Player2 : Player1; // Loop in current state until go signal goes low
+				
+                default:     next_state = Player1;
+        endcase
+    end // state_table
+   
+
+    // Output logic aka all of our datapath control signals
+    always @(*)
+    begin: enable_signals
+        // By default make all our signals 0
+	Player1 = 2'b00;
+	Player2 = 2'b00;
+
+        case (current_state)
+            Player1: begin
+                player = 2'b01;
+                end
+            Player2: begin
+                player = 2'b10;
+                end
+        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        endcase
+    end // enable_signals
+   
+    // current_state registers
+    always@(posedge clk)
+    begin: state_FFs
+        if(!resetn)
+            current_state <= Player1;
+        else
+            current_state <= next_state;
+    end // state_FFS
+endmodule
 
 
 module FSM(
@@ -129,9 +366,9 @@ module FSM(
     localparam  choose_card1        = 4'd0,
                 choose_card1_wait   = 4'd1,
                 choose_card2        = 4'd2,
-					 choose_card2_wait   = 4'd4,
-                check_match 	      = 4'd3,
-					 check_match_wait 	= 4'd5;
+		choose_card2_wait   = 4'd4,
+                check_match 	    = 4'd3,
+	        check_match_wait    = 4'd5;
     
     // Next state logic aka our state table
     always@(*)
@@ -154,7 +391,7 @@ module FSM(
 				
                 check_match: next_state = go ? check_match_wait : check_match; // Loop in current state until value is input
 					 
-					 check_match_wait: next_state = go ? check_match_wait : choose_card1; // Loop in current state until value is input
+		check_match_wait: next_state = go ? check_match_wait : choose_card1; // Loop in current state until value is input
 				
                 default:     next_state = choose_card1;
         endcase
@@ -209,7 +446,8 @@ module datapath(
     reg [5:0] otp = 6'b000000;
 	 reg [5:0] c1;
 	 reg [5:0] c2;
-	 always@(posedge clk)
+	 //always@(posedge clk)
+	 always@(*)
 	 begin
 		if (!resetn)
 		begin
@@ -217,21 +455,20 @@ module datapath(
 		end
 		else
 		begin
-			
-			if (card1)
-			begin
-				otp <= 6'b000001;
-				c1 <= TEMP_match;
-			end
-			if (card2)
-			begin
-				otp <= 6'b10000;
-				c2 <= TEMP_match;
-			end
 			if (match_the_card)
 			begin
 				otp <= 6'b111111;
 
+			end
+			else if (card1)
+			begin
+				otp <= 6'b000001;
+				c1 <= TEMP_match;
+			end
+			else if (card2)
+			begin
+				otp <= 6'b10000;
+				c2 <= TEMP_match;
 			end
 			
 		end
