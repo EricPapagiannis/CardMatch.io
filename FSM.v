@@ -180,7 +180,7 @@ module FSM_Cards(
 				
                 check_match: next_state = go ? check_match_wait : check_match; // Loop in current state until value is input
 					 
-		check_match_wait: next_state = go ? check_match_wait : choose_card1; // Loop in current state until value is input
+		check_match_wait: next_state = go ? check_match_wait : choose_card1; // Loop in ent state until value is input
 				
                 default:     next_state = choose_card1;
         endcase
