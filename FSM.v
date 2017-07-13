@@ -72,6 +72,7 @@ module FinalB58
 	// for the VGA controller, in addition to any other functionality your design may require.
 	wire card1, card2;
     wire [5:0] tc1, tc2;
+	 wire [1:0] player;
     // Instansiate datapath
 	 datapath d0(.clk(CLOCK_50),
     .resetn(KEY[0]),
@@ -90,7 +91,7 @@ module FinalB58
     // Instansiate FSM control
      FSM c0(.clk(CLOCK_50),
     .resetn(KEY[0]),
-    .go(KEY[3]),
+    .go(SW[17]),
 	 .matching(1'b1),
 	.match_the_cards(writeEn),
    .card1(card1), 
@@ -114,20 +115,34 @@ module FinalB58
 
    wire can_move;
    reg out;
-   wire [1:0] player;
-	always@(posedge CLOCK_50)
+   reg switch = 1'b0;
+	
+	/*always@(*)
 	begin
-		if (tc1 == tc2)
-		begin
-			out <= 1'b1;
+		if (KEY[0])
+		begin 
+		switch <= 1'b0;
 		end
-		else
+	end*/
+	
+	always@(*)
+	begin
+		if (writeEn)
 		begin
-			out <= 1'b0;
+			if (tc1 == tc2)
+				begin
+					out <= 1'b1; 
+					//switch <= switch;
+				end
+			else
+				begin
+					out <= 1'b0;
+					switch <= ~switch;
+				end
 		end
 	end
-	assign LEDG[1:0] = player;
-	assign LEDR[17] = out;
+	assign LEDG[1:0] = switch;
+	assign LEDR[9] = out;
 endmodule
 
 /*module FSM_Cards(
@@ -136,7 +151,7 @@ endmodule
     input go,
     input matching, // Used to determine if the fsm is in the matching state; if so dont do anything until it is finished
     //output reg writeEn,
-    //output reg  ld_x, ld_y
+    //output reg  ld_x, ld_yswitch <= ~switch
     output reg  is_match
     );
 
@@ -316,7 +331,7 @@ module FSM_Players(
 					 
                 Player1: next_state = go ? Player1 : Player2; // Loop in current state until value is input
 				
-                Player2: next_state = go ? Player2 : Player1; // Loop in current state until go signal goes low
+                Player2: next_state = ~go ? Player2 : Player1; // Loop in current state until go signal goes low
 				
                 default:     next_state = Player1;
         endcase
@@ -327,7 +342,7 @@ module FSM_Players(
     always @(*)
     begin: enable_signals
         // By default make all our signals 0
-	reg player = 2'b00;
+	player = 2'b00;
 
         case (current_state)
             Player1: begin
@@ -438,7 +453,7 @@ module datapath(
     input [5:0] TEMP_match,
     input card1, card2,
 	 input match_the_card,
-	 output [16:0] LEDS,
+	 output [5:0] LEDS,
     output [7:0] output_X, 
 	output [6:0] output_Y,
 	output [5:0] card_chosen_1, card_chosen_2,
@@ -474,7 +489,7 @@ module datapath(
 			
 		end
 	end
-	assign LEDS[16:11] = TEMP_match; // used to see what cards we're fliped
+	//assign LEDS[16:11] = TEMP_match; // used to see what cards we're fliped
 	assign LEDS[5:0] = otp;
 	assign card_chosen_1 = c1;
 	assign card_chosen_2 = c2;
