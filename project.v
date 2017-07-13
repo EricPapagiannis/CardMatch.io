@@ -1,5 +1,3 @@
-
-
 module project
         (
 		CLOCK_50,						//	On Board 50 MHz
@@ -46,6 +44,8 @@ module project
 	reg [7:0] xin;
 	reg [6:0] yin;
 	reg [2:0] colour_in;
+	reg [2:0] colour_in1;
+	reg [2:0] colour_in2;
 	
 	// Create an Instance of a VGA controller - there can be only one!
 	// Define the number of colours as well as the initial background
@@ -69,30 +69,22 @@ module project
 		defparam VGA.RESOLUTION = "160x120";
 		defparam VGA.MONOCHROME = "FALSE";
 		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
-		defparam VGA.BACKGROUND_IMAGE = "image.colour2.mif";
+		defparam VGA.BACKGROUND_IMAGE = "image.colour.mif";
 			
 	// Put your code here. Your code should produce signals x,y,colour and writeEn/plot
 	// for the VGA controller, in addition to any other functionality your design may require
-	always@(posedge SW[0])
-	begin
-		xin = 8'b00000111; //card coordinates
-		yin = 7'b0000111;
-		ycounter = 6'b000000;
-		xcounter = 6'b000000;
-		drawScreen = 6'b000001;
-		colour_in = 3'b110;
-	end
 	// 22x32 card dimensions
+	
 	always@(posedge CLOCK_50)
 	begin
-		if (ycounter < 6'b100000)
+		if (ycounter < 6'b011100)
 		begin
 			xcounter = xcounter + 6'b000001;
-			if (xcounter >= 6'b010110)
+			if (xcounter >= 6'b010010)
 			begin
 				xcounter = 6'b000000;
 				ycounter = ycounter + 6'b000001;
-				if (ycounter == 6'b100000)
+				if (ycounter == 6'b011100)
 				begin
 					drawScreen = 6'b000000;
 				end
@@ -102,17 +94,156 @@ module project
 		begin
 			drawScreen = 6'b000000;
 		end
+
+		if (~KEY[1])
+		begin
+			drawScreen = 6'b000001;
+			xcounter = 6'b000000;
+			ycounter = 6'b000000;
+		end
+		
+		// ### FIRST ### color = 011 is background
+		
+		if (SW[17]) // top row most left
+		begin
+			xin = 8'b00000111; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b001;
+		end
+		
+		if (SW[16])
+		begin
+			xin = 8'b00100001; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b010;
+		end
+		
+		if (SW[15])
+		begin
+			xin = 8'b00111011; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b011;
+		end
+		
+		if (SW[14])
+		begin
+			xin = 8'b01010101; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b100;
+		end
+		
+		if (SW[13])
+		begin
+			xin = 8'b01101111; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b101;
+		end
+		
+		if (SW[12]) // top row most right
+		begin
+			xin = 8'b10001001; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b110;
+		end
+		
+		// #### SECOND ROW ### b0101101
+
+		if (SW[11]) // second row most left
+		begin
+			xin = 8'b00000111; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b001;
+		end
+		
+		if (SW[10])
+		begin
+			xin = 8'b00100001; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b010;
+		end
+		
+		if (SW[9])
+		begin
+			xin = 8'b00111011; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b011;
+		end
+		
+		if (SW[8])
+		begin
+			xin = 8'b01010101; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b100;
+		end
+		
+		if (SW[7])
+		begin
+			xin = 8'b01101111; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b101;
+		end
+		
+		if (SW[6]) // second row most right
+		begin
+			xin = 8'b10001001; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b110;
+		end
+		
+		// #### THIRD ROW ###b1010101
+
+		if (SW[5]) // third row most left
+		begin
+			xin = 8'b00000111; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b001;
+		end
+		
+		if (SW[4])
+		begin
+			xin = 8'b00100001; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b010;
+		end
+		
+		if (SW[3])
+		begin
+			xin = 8'b00111011; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b011;
+		end
+		
+		if (SW[2])
+		begin
+			xin = 8'b01010101; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b100;
+		end
+		
+		if (SW[1])
+		begin
+			xin = 8'b01101111; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b101;
+		end
+		
+		if (SW[0]) // third row most right
+		begin
+			xin = 8'b10001001; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b110;
+		end
+		
 	end // state_table
 	
-	 assign colour = colour_in;
-     assign x = xin + xcounter;
-	 assign y = yin + ycounter;
-	 assign writeEn = drawScreen;
-    // Instansiate datapath
+	assign colour = colour_in1;
+	assign x = xin + xcounter;
+	assign y = yin + ycounter;
+	assign writeEn = drawScreen;
+	// Instansiate datapath
 	// datapath d0(...);
 
-    // Instansiate FSM control
-    // control c0(...);
+   // Instansiate FSM control
+   // control c0(...);
     
 endmodule
-
