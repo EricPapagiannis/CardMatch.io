@@ -15,11 +15,12 @@ module FinalB58
 		VGA_R,   						//	VGA Red[9:0]
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B,   						//	VGA Blue[9:0]
-		LEDR
+		LEDR,
+		LEDG
 	);
 
 	input			CLOCK_50;				//	50 MHz
-	input   [9:0]   SW;
+	input   [17:0]   SW;
 	input   [3:0]   KEY;
 	
 	// Declare your inputs and outputs here
@@ -32,7 +33,8 @@ module FinalB58
 	output	[9:0]	VGA_R;   				//	VGA Red[9:0]
 	output	[9:0]	VGA_G;	 				//	VGA Green[9:0]
 	output	[9:0]	VGA_B;   				//	VGA Blue[9:0]
-	output [9:0] LEDR;
+	output [17:0] LEDR;
+	output [7:0] LEDG;
 	wire resetn;
 	assign resetn = KEY[0];
 	
@@ -69,7 +71,7 @@ module FinalB58
 	// Put your code here. Your code should produce signals x,y,colour and writeEn/plot
 	// for the VGA controller, in addition to any other functionality your design may require.
 	wire card1, card2;
-    wire tc1, tc2;
+    wire [5:0] tc1, tc2;
     // Instansiate datapath
 	 datapath d0(.clk(CLOCK_50),
     .resetn(KEY[0]),
@@ -94,7 +96,7 @@ module FinalB58
    .card1(card1), 
 	.card2(card2)
 	);
-
+ 
     FSM_Players p0(.clk(CLOCK_50),
     .resetn(KEY[0]),
     .go(out),
@@ -103,7 +105,7 @@ module FinalB58
 
     FSM_Joystick j0(.clk(CLOCK_50),
     .resetn(KEY[0]),
-    .go(SW[18:15]),
+    .go(SW[17:14]),
    .can_move(can_move)
 	);
 
@@ -112,7 +114,7 @@ module FinalB58
 
    wire can_move;
    reg out;
-   wire [1:0] player = 2'b01;
+   wire [1:0] player;
 	always@(posedge CLOCK_50)
 	begin
 		if (tc1 == tc2)
@@ -125,17 +127,17 @@ module FinalB58
 		end
 	end
 	assign LEDG[1:0] = player;
-	assign LEDR[9] = out;
+	assign LEDR[17] = out;
 endmodule
 
-module FSM_Cards(
+/*module FSM_Cards(
     input clk,
     input resetn,
     input go,
     input matching, // Used to determine if the fsm is in the matching state; if so dont do anything until it is finished
     //output reg writeEn,
     //output reg  ld_x, ld_y
-    output reg  is_match;
+    output reg  is_match
     );
 
     reg [6:0] current_state, next_state; 
@@ -217,7 +219,7 @@ module FSM_Cards(
         else
             current_state <= next_state;
     end // state_FFS
-endmodule
+endmodule*/
 
 module FSM_Joystick(
     input clk,
@@ -261,7 +263,7 @@ module FSM_Joystick(
     always @(*)
     begin: enable_signals
         // By default make all our signals 0
-        move = 1'b0;
+        can_move = 1'b0;
 
         case (current_state)
             idle: begin
@@ -299,7 +301,7 @@ module FSM_Players(
     reg [6:0] current_state, next_state; 
     
     localparam  Player1        = 4'd0,
-                Player2        = 4'd1
+                Player2        = 4'd1;
     
     // Next state logic aka our state table
     always@(*)
@@ -325,8 +327,7 @@ module FSM_Players(
     always @(*)
     begin: enable_signals
         // By default make all our signals 0
-	Player1 = 2'b00;
-	Player2 = 2'b00;
+	reg player = 2'b00;
 
         case (current_state)
             Player1: begin
@@ -335,7 +336,7 @@ module FSM_Players(
             Player2: begin
                 player = 2'b10;
                 end
-        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        // default:    // don't need 	assign LEDS[17:11] = TEMP_match; default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals
    
@@ -378,7 +379,7 @@ module FSM(
 		//State for Init
 		//State for choose card 1
 		//State for choose card 2
-		//State for match
+		//State for match   reg out;
 		//State for no match
 					 
                 choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Loop in current state until value is input
@@ -437,7 +438,7 @@ module datapath(
     input [5:0] TEMP_match,
     input card1, card2,
 	 input match_the_card,
-	 output [5:0] LEDS,
+	 output [16:0] LEDS,
     output [7:0] output_X, 
 	output [6:0] output_Y,
 	output [5:0] card_chosen_1, card_chosen_2,
@@ -473,7 +474,7 @@ module datapath(
 			
 		end
 	end
-	
+	assign LEDS[16:11] = TEMP_match; // used to see what cards we're fliped
 	assign LEDS[5:0] = otp;
 	assign card_chosen_1 = c1;
 	assign card_chosen_2 = c2;
