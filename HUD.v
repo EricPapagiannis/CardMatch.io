@@ -1,9 +1,12 @@
 `timescale 1ns / 1ns // `timescale time_unit/time_precision
 
-module HUD(HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7);
-
+module HUD(GPIO, LEDR, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7);
+    //GPIO inputs (Will change upon pin assignment)
+    input [3:0] GPIO;
+    //Outputs for Hexes
     output [6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7;
-
+    //Outputs for joystick testing	
+    output [3:0] LEDR;
     
     //Instatiate the scores for P1 and P2
     SevenSegDecoder my_display1(HEX0, 4'b0000);
@@ -15,6 +18,10 @@ module HUD(HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7);
     SevenSegDecoder my_display5(HEX2, 4'b0101);
     //Instatiate winner as P1 (Exclude HEX5 since default is P)
     SevenSegDecoder my_display5(HEX6, 4'b0001);
+
+    //Assign the LEDRs to respond to GPIO joystick inputs
+    JoystickTester tester1(LEDR, GPIO);
+    
     
 endmodule
 
@@ -47,4 +54,18 @@ module SevenSegDecoder(hex_out, inputs);
 	//Set the default as the letter P for displaying players
         default: hex_out = 7'b0001100;
     endcase
+endmodule
+
+module JoystickTester(inputs, outputs);
+    output reg [3:0] outputs;
+    input [3:0] inputs;
+    always @(inputs)
+	case(inputs)
+	4'h1: outputs[0] = 1'b1;
+        4'h2: outputs[1] = 1'b1;
+        4'h3: outputs[2] = 1'b1;
+        4'h4: outputs[3] = 1'b1;
+	default: outputs[3:0] = 4'b0000;
+    endcase
+    assign LEDR = outputs;
 endmodule
