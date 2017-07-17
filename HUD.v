@@ -1,6 +1,6 @@
 `timescale 1ns / 1ns // `timescale time_unit/time_precision
 
-module HUD(LEDR, SW,HEX0, HEX1, HEX2, HEX3, HEX4, HEX5);
+module HUD(HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7);
 
     output [6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7;
 
