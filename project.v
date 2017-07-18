@@ -82,20 +82,21 @@ module project
 		begin
 			xcounter = xcounter + 6'b000001;
 			
-			
+			if (xcounter >= 6'b010010)
+			begin
+				xcounter = 6'b000000;
+				ycounter = ycounter + 6'b000001;
+				if (ycounter == 6'b011100)
+				begin
+					drawScreen = 6'b000000;
+				 end
+			 end
+				
 			if (xcounter >= 6'b001001)
 			begin
 			    colour_in = colour_in2;
 			    
-			    if (xcounter >= 6'b010010)
-    			begin
-    				xcounter = 6'b000000;
-    				ycounter = ycounter + 6'b000001;
-    				if (ycounter == 6'b011100)
-    				begin
-    					drawScreen = 6'b000000;
-				    end
-			    end
+			    
 			end
 		end
 		else
@@ -117,46 +118,46 @@ module project
 			xin = 8'b00000111; //card coordinates
 			yin = 7'b0000110;
 			colour_in1 = 3'b001;
-			colour_in2 = 3'b110;
+			colour_in2 = 3'b010;
 		end
 		
 		if (SW[16])
 		begin
 			xin = 8'b00100001; //card coordinates
 			yin = 7'b0000110;
-			colour_in1 = 3'b010;
-			colour_in2 = 3'b101;
+			colour_in1 = 3'b011;
+			colour_in2 = 3'b100;
 		end
 		
 		if (SW[15])
 		begin
 			xin = 8'b00111011; //card coordinates
 			yin = 7'b0000110;
-			colour_in1 = 3'b011;
-			colour_in2 = 3'b100;
+			colour_in1 = 3'b010;
+			colour_in2 = 3'b011;
 		end
 		
 		if (SW[14])
 		begin
 			xin = 8'b01010101; //card coordinates
 			yin = 7'b0000110;
-			colour_in1 = 3'b100;
-			colour_in2 = 3'b011;
+			colour_in1 = 3'b010;
+			colour_in2 = 3'b111;
 		end
 		
 		if (SW[13])
 		begin
 			xin = 8'b01101111; //card coordinates
 			yin = 7'b0000110;
-			colour_in1 = 3'b101;
-			colour_in2 = 3'b010;
+			colour_in1 = 3'b111;
+			colour_in2 = 3'b100;
 		end
 		
 		if (SW[12]) // top row most right
 		begin
 			xin = 8'b10001001; //card coordinates
 			yin = 7'b0000110;
-			colour_in1 = 3'b110;
+			colour_in1 = 3'b101;
 			colour_in2 = 3'b001;
 		end
 		
@@ -166,47 +167,47 @@ module project
 		begin
 			xin = 8'b00000111; //card coordinates
 			yin = 7'b0101101;
-			colour_in1 = 3'b001;
-			colour_in2 = 3'b110;
+			colour_in1 = 3'b101;
+			colour_in2 = 3'b001;
 		end
 		
 		if (SW[10])
 		begin
 			xin = 8'b00100001; //card coordinates
 			yin = 7'b0101101;
-			colour_in1 = 3'b010;
-			colour_in2 = 3'b101;
+			colour_in1 = 3'b001;
+			colour_in2 = 3'b010;
 		end
 		
 		if (SW[9])
 		begin
 			xin = 8'b00111011; //card coordinates
 			yin = 7'b0101101;
-			colour_in1 = 3'b011;
-			colour_in2 = 3'b100;
+			colour_in1 = 3'b100;
+			colour_in2 = 3'b101;
 		end
 		
 		if (SW[8])
 		begin
 			xin = 8'b01010101; //card coordinates
 			yin = 7'b0101101;
-			colour_in1 = 3'b100;
-			colour_in2 = 3'b011;
+			colour_in1 = 3'b101;
+			colour_in2 = 3'b111;
 		end
 		
 		if (SW[7])
 		begin
 			xin = 8'b01101111; //card coordinates
 			yin = 7'b0101101;
-			colour_in1 = 3'b101;
-			colour_in2 = 3'b010;
+			colour_in1 = 3'b100;
+			colour_in2 = 3'b101;
 		end
 		
 		if (SW[6]) // second row most right
 		begin
 			xin = 8'b10001001; //card coordinates
 			yin = 7'b0101101;
-			colour_in1 = 3'b110;
+			colour_in1 = 3'b100;
 			colour_in2 = 3'b001;
 		end
 		
@@ -216,8 +217,8 @@ module project
 		begin
 			xin = 8'b00000111; //card coordinates
 			yin = 7'b1010011;
-			colour_in1 = 3'b001;
-			colour_in2 = 3'b110;
+			colour_in1 = 3'b101;
+			colour_in2 = 3'b111;
 		end
 		
 		if (SW[4])
@@ -225,39 +226,39 @@ module project
 			xin = 8'b00100001; //card coordinates
 			yin = 7'b1010011;
 			colour_in1 = 3'b010;
-			colour_in2 = 3'b101;
+			colour_in2 = 3'b011;
 		end
 		
 		if (SW[3])
 		begin
 			xin = 8'b00111011; //card coordinates
 			yin = 7'b1010011;
-			colour_in1 = 3'b011;
-			colour_in2 = 3'b100;
+			colour_in1 = 3'b010;
+			colour_in2 = 3'b111;
 		end
 		
 		if (SW[2])
 		begin
 			xin = 8'b01010101; //card coordinates
 			yin = 7'b1010011;
-			colour_in1 = 3'b100;
-			colour_in2 = 3'b011;
+			colour_in1 = 3'b111;
+			colour_in2 = 3'b100;
 		end
 		
 		if (SW[1])
 		begin
 			xin = 8'b01101111; //card coordinates
 			yin = 7'b1010011;
-			colour_in1 = 3'b101;
-			colour_in2 = 3'b010;
+			colour_in1 = 3'b100;
+			colour_in2 = 3'b001;
 		end
 		
 		if (SW[0]) // third row most right
 		begin
 			xin = 8'b10001001; //card coordinates
 			yin = 7'b1010011;
-			colour_in1 = 3'b110;
-			colour_in2 = 3'b001;
+			colour_in1 = 3'b011;
+			colour_in2 = 3'b100;
 		end
 		
 	end // state_table
