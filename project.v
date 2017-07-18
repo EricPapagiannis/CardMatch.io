@@ -77,18 +77,26 @@ module project
 	
 	always@(posedge CLOCK_50)
 	begin
+	    colour_in = colour_in1;
 		if (ycounter < 6'b011100)
 		begin
 			xcounter = xcounter + 6'b000001;
-			if (xcounter >= 6'b010010)
+			
+			
+			if (xcounter >= 6'b001001)
 			begin
-				xcounter = 6'b000000;
-				ycounter = ycounter + 6'b000001;
-				if (ycounter == 6'b011100)
-				begin
-					drawScreen = 6'b000000;
-				end
-			end		
+			    colour_in = colour_in2;
+			    
+			    if (xcounter >= 6'b010010)
+    			begin
+    				xcounter = 6'b000000;
+    				ycounter = ycounter + 6'b000001;
+    				if (ycounter == 6'b011100)
+    				begin
+    					drawScreen = 6'b000000;
+				    end
+			    end
+			end
 		end
 		else
 		begin
@@ -109,6 +117,7 @@ module project
 			xin = 8'b00000111; //card coordinates
 			yin = 7'b0000110;
 			colour_in1 = 3'b001;
+			colour_in2 = 3'b110;
 		end
 		
 		if (SW[16])
@@ -116,6 +125,7 @@ module project
 			xin = 8'b00100001; //card coordinates
 			yin = 7'b0000110;
 			colour_in1 = 3'b010;
+			colour_in2 = 3'b101;
 		end
 		
 		if (SW[15])
@@ -123,6 +133,7 @@ module project
 			xin = 8'b00111011; //card coordinates
 			yin = 7'b0000110;
 			colour_in1 = 3'b011;
+			colour_in2 = 3'b100;
 		end
 		
 		if (SW[14])
@@ -130,6 +141,7 @@ module project
 			xin = 8'b01010101; //card coordinates
 			yin = 7'b0000110;
 			colour_in1 = 3'b100;
+			colour_in2 = 3'b011;
 		end
 		
 		if (SW[13])
@@ -137,6 +149,7 @@ module project
 			xin = 8'b01101111; //card coordinates
 			yin = 7'b0000110;
 			colour_in1 = 3'b101;
+			colour_in2 = 3'b010;
 		end
 		
 		if (SW[12]) // top row most right
@@ -144,6 +157,7 @@ module project
 			xin = 8'b10001001; //card coordinates
 			yin = 7'b0000110;
 			colour_in1 = 3'b110;
+			colour_in2 = 3'b001;
 		end
 		
 		// #### SECOND ROW ### b0101101
@@ -153,6 +167,7 @@ module project
 			xin = 8'b00000111; //card coordinates
 			yin = 7'b0101101;
 			colour_in1 = 3'b001;
+			colour_in2 = 3'b110;
 		end
 		
 		if (SW[10])
@@ -160,6 +175,7 @@ module project
 			xin = 8'b00100001; //card coordinates
 			yin = 7'b0101101;
 			colour_in1 = 3'b010;
+			colour_in2 = 3'b101;
 		end
 		
 		if (SW[9])
@@ -167,6 +183,7 @@ module project
 			xin = 8'b00111011; //card coordinates
 			yin = 7'b0101101;
 			colour_in1 = 3'b011;
+			colour_in2 = 3'b100;
 		end
 		
 		if (SW[8])
@@ -174,6 +191,7 @@ module project
 			xin = 8'b01010101; //card coordinates
 			yin = 7'b0101101;
 			colour_in1 = 3'b100;
+			colour_in2 = 3'b011;
 		end
 		
 		if (SW[7])
@@ -181,6 +199,7 @@ module project
 			xin = 8'b01101111; //card coordinates
 			yin = 7'b0101101;
 			colour_in1 = 3'b101;
+			colour_in2 = 3'b010;
 		end
 		
 		if (SW[6]) // second row most right
@@ -188,6 +207,7 @@ module project
 			xin = 8'b10001001; //card coordinates
 			yin = 7'b0101101;
 			colour_in1 = 3'b110;
+			colour_in2 = 3'b001;
 		end
 		
 		// #### THIRD ROW ###b1010101
@@ -197,6 +217,7 @@ module project
 			xin = 8'b00000111; //card coordinates
 			yin = 7'b1010011;
 			colour_in1 = 3'b001;
+			colour_in2 = 3'b110;
 		end
 		
 		if (SW[4])
@@ -204,6 +225,7 @@ module project
 			xin = 8'b00100001; //card coordinates
 			yin = 7'b1010011;
 			colour_in1 = 3'b010;
+			colour_in2 = 3'b101;
 		end
 		
 		if (SW[3])
@@ -211,6 +233,7 @@ module project
 			xin = 8'b00111011; //card coordinates
 			yin = 7'b1010011;
 			colour_in1 = 3'b011;
+			colour_in2 = 3'b100;
 		end
 		
 		if (SW[2])
@@ -218,6 +241,7 @@ module project
 			xin = 8'b01010101; //card coordinates
 			yin = 7'b1010011;
 			colour_in1 = 3'b100;
+			colour_in2 = 3'b011;
 		end
 		
 		if (SW[1])
@@ -225,6 +249,7 @@ module project
 			xin = 8'b01101111; //card coordinates
 			yin = 7'b1010011;
 			colour_in1 = 3'b101;
+			colour_in2 = 3'b010;
 		end
 		
 		if (SW[0]) // third row most right
@@ -232,11 +257,12 @@ module project
 			xin = 8'b10001001; //card coordinates
 			yin = 7'b1010011;
 			colour_in1 = 3'b110;
+			colour_in2 = 3'b001;
 		end
 		
 	end // state_table
 	
-	assign colour = colour_in1;
+	assign colour = colour_in;
 	assign x = xin + xcounter;
 	assign y = yin + ycounter;
 	assign writeEn = drawScreen;
