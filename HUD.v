@@ -1,6 +1,6 @@
 `timescale 1ns / 1ns // `timescale time_unit/time_precision
 
-module FinalB58(SW, EXT_IO, LEDR, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7);
+module FinalB58(KEY, SW, EXT_IO, LEDR, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7);
     //GPIO inputs (Will change upon pin assignment)
     input [3:0] EXT_IO;
 
@@ -60,6 +60,29 @@ module FinalB58(SW, EXT_IO, LEDR, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7
 	SevenSegDecoder my_display7(HEX2, outDC[3:0]);
 	SevenSegDecoder_High my_display8(HEX3, outDC[3:0]);
 	    
+
+    input [1:0] KEY;
+    wire [3:0] p1ScoreCounter;
+    wire [3:0] p2ScoreCounter
+	
+    ScoreCounter p1Score(.enable(1'b1),
+	.reset_n(SW[16]),
+	.clock(KEY[0]),
+	.q(p1ScoreCounter)
+    );
+
+    
+    ScoreCounter p2Score(.enable(1'b1),
+	.reset_n(SW[15]),
+	.clock(KEY[1]),
+	.q(p2ScoreCounter)
+    );
+
+    SevenSegDecoder my_display9(HEX0, p1ScoreCounter[3:0]);
+    SevenSegDecoder my_display10(HEX1, p2ScoreCounter[3:0]);
+
+
+
 
 endmodule
 
@@ -165,6 +188,22 @@ module DisplayCounter(enable, reset_n, clock, q);
 		else if (enable == 1'b0) // increment q only when Enable is 1
 			q <= q;
 		else if (q == 1'b0)
-			q <= 1'b1111;
+			q <= 4'b1111;
+	end
+endmodule
+
+module ScoreCounter(enable, reset_n, clock, q);
+	output reg [3:0] q; // declare q
+	input clock, enable, reset_n;
+	always @(posedge clock) // triggered every time clock rises
+		begin
+		if (reset_n == 1'b1) // when Clear b is 1
+			q <= 1'b0; // q is set to 15
+		else if (enable == 1'b1) // when q is the minimum value for the counter
+			q <= q + 1'b1; // q reset back to its original value
+		else if (enable == 1'b0) // increment q only when Enable is 1
+			q <= q;
+		else if (q == 4'b1001)
+			q <= 1'b0;
 	end
 endmodule
