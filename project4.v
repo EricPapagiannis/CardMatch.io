@@ -394,17 +394,12 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 	reg [5:0] ycounter = 6'b100000;
 	reg [7:0] xin;
 	reg [6:0] yin;
-	reg [7:0] xin_prev1;
-	reg [6:0] yin_prev1;
-	reg [7:0] xin_prev2;
-	reg [6:0] yin_prev2;
 	reg [2:0] colour_in;
 	reg [2:0] colour_in1;
 	reg [2:0] colour_in2;
-	reg [1:0] isFlipped = 2'b00;
 	reg drawScreen = 1'b0;
 	reg cardDrawn;
-	
+	reg countCard = 2'b00;
 
 
 		always@(posedge clk)
@@ -445,33 +440,11 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				drawScreen = 6'b000001;
 				xcounter = 6'b000000;
 				ycounter = 6'b000000;
-				if (isFlipped == 2'b00 || isFlipped == 2'b01)
-				begin
-				isFlipped = isFlipped + 2'b01;
-				end
+
 			end
 			
-			if (~keys[2])
-			begin
-				drawScreen = 6'b000001;
-				xcounter = 6'b000000;
-				ycounter = 6'b000000;
-				colour_in1 = 3'b000;
-				colour_in2 = 3'b000;
-				xin = xin_prev2;
-				yin = yin_prev2;
-			end
 			
-			if (~keys[3])
-			begin
-				drawScreen = 6'b000001;
-				xcounter = 6'b000000;
-				ycounter = 6'b000000;
-				colour_in1 = 3'b000;
-				colour_in2 = 3'b000;
-				xin = xin_prev1;
-				yin = yin_prev1;
-			end
+			
 			
 			// ### FIRST ### color = 011 is background
 			
@@ -479,20 +452,20 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			begin
 				xin = 8'b00000111; //card coordinatescardDrawn = 1'b1;
 				yin = 7'b0000110;
-				colour_in1 = 3'b001;
-				colour_in2 = 3'b010;
-				if (isFlipped ==  2'b01)
+				
+				
+				if (~keys[2])
 				begin
-					xin_prev1 = xin;
-					yin_prev1 = yin;
-					xin_prev2 = xin;
-					yin_prev2 = yin;
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
 				end
-				if (isFlipped ==  2'b10)
+				else
 				begin
-					xin_prev1 = xin;
-					yin_prev1 = yin;
-					isFlipped =  2'b00;
+					colour_in1 = 3'b001;
+					colour_in2 = 3'b010;
 				end
 			end
 			
@@ -500,21 +473,20 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			begin
 				xin = 8'b00100001; //card coordinates
 				yin = 7'b0000110;
-				colour_in1 = 3'b011;
-				colour_in2 = 3'b100;
-				if (isFlipped ==  2'b01)
+				
+				
+				if (~keys[2])
 				begin
-					xin_prev1 = xin;
-					yin_prev1 = yin;
-					xin_prev2 = xin;
-					yin_prev2 = yin;
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
 				end
-				if (isFlipped ==  2'b10)
+				else
 				begin
-					cardDrawn = 1'b1;
-					xin_prev1 = xin;
-					yin_prev1 = yin;
-					isFlipped =  2'b00;
+					colour_in1 = 3'b011;
+					colour_in2 = 3'b100;
 				end
 			end
 			
@@ -523,21 +495,19 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			begin
 				xin = 8'b00111011; //card coordinates
 				yin = 7'b0000110;
-				colour_in1 = 3'b010;
-				colour_in2 = 3'b011;
-				if (isFlipped ==  2'b01)
+				
+				if (~keys[2])
 				begin
-					xin_prev1 = xin;
-					yin_prev1 = yin;
-					xin_prev2 = xin;
-					yin_prev2 = yin;
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
 				end
-				if (isFlipped ==  2'b10)
+				else
 				begin
-					cardDrawn = 1'b1;
-					xin_prev1 = xin;
-					yin_prev1 = yin;
-					isFlipped =  2'b00;
+					colour_in1 = 3'b010;
+					colour_in2 = 3'b011;
 				end
 			end
 			
@@ -545,24 +515,60 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			begin
 				xin = 8'b01010101; //card coordinates
 				yin = 7'b0000110;
-				colour_in1 = 3'b010;
-				colour_in2 = 3'b111;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b010;
+					colour_in2 = 3'b111;
+				end
 			end
 			
 			if (switches[13])
 			begin
 				xin = 8'b01101111; //card coordinates
 				yin = 7'b0000110;
-				colour_in1 = 3'b111;
-				colour_in2 = 3'b100;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b111;
+					colour_in2 = 3'b100;
+				end
 			end
 			
 			if (switches[12]) // top row most right
 			begin
 				xin = 8'b10001001; //card coordinates
 				yin = 7'b0000110;
-				colour_in1 = 3'b101;
-				colour_in2 = 3'b001;
+
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b101;
+					colour_in2 = 3'b001;
+				end
 			end
 			
 			// #### SECOND ROW ### b0101101
@@ -571,48 +577,120 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			begin
 				xin = 8'b00000111; //card coordinates
 				yin = 7'b0101101;
-				colour_in1 = 3'b101;
-				colour_in2 = 3'b001;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b101;
+					colour_in2 = 3'b001;
+				end
 			end
 			
 			if (switches[10])
 			begin
 				xin = 8'b00100001; //card coordinates
 				yin = 7'b0101101;
-				colour_in1 = 3'b001;
-				colour_in2 = 3'b010;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b001;
+					colour_in2 = 3'b010;
+				end
 			end
 			
 			if (switches[9])
 			begin
 				xin = 8'b00111011; //card coordinates
 				yin = 7'b0101101;
-				colour_in1 = 3'b100;
-				colour_in2 = 3'b101;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b100;
+					colour_in2 = 3'b101;
+				end
 			end
 			
 			if (switches[8])
 			begin
 				xin = 8'b01010101; //card coordinates
 				yin = 7'b0101101;
-				colour_in1 = 3'b101;
-				colour_in2 = 3'b111;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b101;
+					colour_in2 = 3'b111;
+				end
 			end
 			
 			if (switches[7])
 			begin
 				xin = 8'b01101111; //card coordinates
 				yin = 7'b0101101;
-				colour_in1 = 3'b100;
-				colour_in2 = 3'b101;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b100;
+					colour_in2 = 3'b101;
+				end
 			end
 			
 			if (switches[6]) // second row most right
 			begin
 				xin = 8'b10001001; //card coordinates
 				yin = 7'b0101101;
-				colour_in1 = 3'b100;
-				colour_in2 = 3'b001;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b100;
+					colour_in2 = 3'b001;
+				end
 			end
 			
 			// #### THIRD ROW ###b1010101
@@ -621,48 +699,120 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			begin
 				xin = 8'b00000111; //card coordinates
 				yin = 7'b1010011;
-				colour_in1 = 3'b101;
-				colour_in2 = 3'b111;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b101;
+					colour_in2 = 3'b111;
+				end
 			end
 			
 			if (switches[4])
 			begin
 				xin = 8'b00100001; //card coordinates
 				yin = 7'b1010011;
-				colour_in1 = 3'b010;
-				colour_in2 = 3'b011;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b010;
+					colour_in2 = 3'b011;
+				end
 			end
 			
 			if (switches[3])
 			begin
 				xin = 8'b00111011; //card coordinates
 				yin = 7'b1010011;
-				colour_in1 = 3'b010;
-				colour_in2 = 3'b111;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b010;
+					colour_in2 = 3'b111;
+				end
 			end
 			
 			if (switches[2])
 			begin
 				xin = 8'b01010101; //card coordinates
 				yin = 7'b1010011;
-				colour_in1 = 3'b111;
-				colour_in2 = 3'b100;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b111;
+					colour_in2 = 3'b100;
+				end
 			end
 			
 			if (switches[1])
 			begin
 				xin = 8'b01101111; //card coordinates
 				yin = 7'b1010011;
-				colour_in1 = 3'b100;
-				colour_in2 = 3'b001;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b100;
+					colour_in2 = 3'b001;
+				end
 			end
 			
 			if (switches[0]) // third row most right
 			begin
 				xin = 8'b10001001; //card coordinates
 				yin = 7'b1010011;
-				colour_in1 = 3'b011;
-				colour_in2 = 3'b100;
+				
+				if (~keys[2])
+				begin
+					drawScreen = 6'b000001;
+					xcounter = 6'b000000;
+					ycounter = 6'b000000;
+					colour_in1 = 3'b000;
+					colour_in2 = 3'b000;
+				end
+				else
+				begin
+					colour_in1 = 3'b011;
+					colour_in2 = 3'b100;
+				end
 			end
 			
 		end // state_table
