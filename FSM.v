@@ -61,6 +61,8 @@ module FinalB58
     .TEMP_match(SW[9:0]),
     .card1(card1), 
 	.card2(card2),
+	.cc1(tc1),
+	.cc2(tc2),
     .output_X(x), 
 	.output_Y(y),
 	.match_the_card(writeEn),
@@ -162,8 +164,12 @@ module FSM_Players(
 		//State for no match
 					 
                 Player1: next_state = go && writeEn ? Player1 : Player2; // Loop in current state until value is input
+					 
+					 //Player1W : next_state = go ? Player1W : Player2;
 				
                 Player2: next_state = go && writeEn ? Player2 : Player1; // Loop in current state until go signal goes low
+					 
+					 //Player2W : next_state = go ? Player2W : Player1;
 				
                 default:     next_state = Player1;
         endcase
@@ -183,13 +189,14 @@ module FSM_Players(
             Player2: begin
                 player = 2'b10;
                 end
+					
         // default:    // don't need 	assign LEDS[17:11] = TEMP_match; default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals
    
     // current_state registers
     always@(posedge clk)
-    begin: state_FFs
+    begin: state_FFs	   
         if(!resetn)
             current_state <= Player1;
         else
@@ -224,7 +231,7 @@ module FSM(
             case (current_state)
 
 		//State for Init
-		//State for choose card 1
+		//State for choose card 1card1
 		//State for choose card 2
 		//State for match   reg out;
 		//State for no match
@@ -271,9 +278,9 @@ module FSM(
                 match_the_cards = 1'b1;
                 end
 			check_match_wait : begin
-				match_the_cards = 1'b0;//e
+				match_the_cards = 1'b1;//e
 				end
-        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        // default:  n  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals
    
@@ -292,7 +299,9 @@ module datapath(
     input clk,
     input resetn,
     input [9:0] TEMP_match,
-    input card1, card2,
+    input card1, card2, 
+	 input [5:0] cc1, 
+	 input [5:0] cc2,
 	 input match_the_card,
 	 output [9:0] LEDS,
     output [7:0] output_X, 
@@ -317,7 +326,7 @@ module datapath(
 			begin
 				otp <= 6'b111111;
 				
-				if (card1 == card2)
+				if (cc1 == cc2)
 				begin
 					mat <= 1'b1;
 					is_correct <= 1'b1;
@@ -333,6 +342,9 @@ module datapath(
 			begin
 				otp <= 6'b000001;
 				c1 <= TEMP_match;
+				
+				//INSERT IF STATEMENTS HERE
+				
 			end
 			else if (card2)
 			begin
@@ -361,7 +373,187 @@ module datapath(
             x <= 7'b0; 
             y <= 6'b0; 
             c <= 3'b0; 
-        end
+        endif (SW[17]) // top row most left
+		begin
+			xin = 8'b00000111; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b001;
+			colour_in2 = 3'b010;
+			if (isFlipped ==  2'b01)
+			begin
+				xin_prev1 = xin;
+				yin_prev1 = yin;
+			end
+			if (isFlipped ==  2'b10)
+			begin
+				xin_prev2 = xin;
+				yin_prev2 = yin;
+				isFlipped =  2'b00;
+			end
+		end
+		
+		if (SW[16])
+		begin
+			xin = 8'b00100001; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b011;
+			colour_in2 = 3'b100;
+			if (isFlipped ==  2'b01)
+			begin
+				xin_prev1 = xin;
+				yin_prev1 = yin;
+			end
+			if (isFlipped ==  2'b10)
+			begin
+				xin_prev2 = xin;
+				yin_prev2 = yin;
+				isFlipped =  2'b00;
+			end
+		end
+		
+		if (SW[15])
+		begin
+			xin = 8'b00111011; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b010;
+			colour_in2 = 3'b011;
+			if (isFlipped ==  2'b01)
+			begin
+				xin_prev1 = xin;
+				yin_prev1 = yin;
+			end
+			if (isFlipped ==  2'b10)
+			begin
+				xin_prev2 = xin;
+				yin_prev2 = yin;
+				isFlipped =  2'b00;
+			end
+		end
+		
+		if (SW[14])
+		begin
+			xin = 8'b01010101; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b010;
+			colour_in2 = 3'b111;
+		end
+		
+		if (SW[13])
+		begin
+			xin = 8'b01101111; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b111;
+			colour_in2 = 3'b100;
+		end
+		
+		if (SW[12]) // top row most right
+		begin
+			xin = 8'b10001001; //card coordinates
+			yin = 7'b0000110;
+			colour_in1 = 3'b101;
+			colour_in2 = 3'b001;
+		end
+		
+		// #### SECOND ROW ### b0101101
+
+		if (SW[11]) // second row most left
+		begin
+			xin = 8'b00000111; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b101;
+			colour_in2 = 3'b001;
+		end
+		
+		if (SW[10])
+		begin
+			xin = 8'b00100001; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b001;
+			colour_in2 = 3'b010;
+		end
+		
+		if (SW[9])
+		begin
+			xin = 8'b00111011; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b100;
+			colour_in2 = 3'b101;
+		end
+		
+		if (SW[8])
+		begin
+			xin = 8'b01010101; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b101;
+			colour_in2 = 3'b111;
+		end
+		
+		if (SW[7])
+		begin
+			xin = 8'b01101111; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b100;
+			colour_in2 = 3'b101;
+		end
+		
+		if (SW[6]) // second row most right
+		begin
+			xin = 8'b10001001; //card coordinates
+			yin = 7'b0101101;
+			colour_in1 = 3'b100;
+			colour_in2 = 3'b001;
+		end
+		
+		// #### THIRD ROW ###b1010101
+
+		if (SW[5]) // third row most left
+		begin
+			xin = 8'b00000111; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b101;
+			colour_in2 = 3'b111;
+		end
+		
+		if (SW[4])
+		beginPlayer1W: begin
+					player = 2'b01;
+			xin = 8'b00100001; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b010;
+			colour_in2 = 3'b011;
+		end
+		
+		if (SW[3])
+		begin
+			xin = 8'b00111011; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b010;
+			colour_in2 = 3'b111;
+		end
+		
+		if (SW[2])
+		begin
+			xin = 8'b01010101; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b111;
+			colour_in2 = 3'b100;
+		end
+		
+		if (SW[1])
+		begin
+			xin = 8'b01101111; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b100;
+			colour_in2 = 3'b001;
+		end
+		
+		if (SW[0]) // third row most right
+		begin
+			xin = 8'b10001001; //card coordinates
+			yin = 7'b1010011;
+			colour_in1 = 3'b011;
+			colour_in2 = 3'b100;
+		end
         else begin
             if(ld_x)
                 x <= {1'b0, data_in};
