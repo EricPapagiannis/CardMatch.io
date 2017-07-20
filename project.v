@@ -43,9 +43,15 @@ module project
 	reg [5:0] ycounter = 6'b100000;
 	reg [7:0] xin;
 	reg [6:0] yin;
+	reg [7:0] xin_prev1;
+	reg [6:0] yin_prev1;
+	reg [7:0] xin_prev2;
+	reg [6:0] yin_prev2;
 	reg [2:0] colour_in;
 	reg [2:0] colour_in1;
 	reg [2:0] colour_in2;
+	reg [1:0] isFlipped = 2'b00;
+	reg cardDrawn;
 	
 	// Create an Instance of a VGA controller - there can be only one!
 	// Define the number of colours as well as the initial background
@@ -77,7 +83,8 @@ module project
 	
 	always@(posedge CLOCK_50)
 	begin
-	    colour_in = colour_in1;
+		cardDrawn = 1'b0;
+	   colour_in = colour_in1;
 		if (ycounter < 6'b011100)
 		begin
 			xcounter = xcounter + 6'b000001;
@@ -86,21 +93,32 @@ module project
 			begin
 				xcounter = 6'b000000;
 				ycounter = ycounter + 6'b000001;
+				
 				if (ycounter == 6'b011100)
 				begin
 					drawScreen = 6'b000000;
-				 end
-			 end
+				end
+			
+			end
 				
 			if (xcounter >= 6'b001001)
 			begin
 			    colour_in = colour_in2;
-			    
-			    
 			end
+			
 		end
 		else
 		begin
+		
+			if (isFlipped == 2'b00)
+			begin
+			isFlipped = isFlipped + 2'b01;
+			end
+			if (isFlipped == 2'b01)
+			begin
+			isFlipped = isFlipped + 2'b01;
+			end
+			
 			drawScreen = 6'b000000;
 		end
 
@@ -111,6 +129,28 @@ module project
 			ycounter = 6'b000000;
 		end
 		
+		if (~KEY[2])
+		begin
+			drawScreen = 6'b000001;
+			xcounter = 6'b000000;
+			ycounter = 6'b000000;
+			colour_in1 = 3'b000;
+			colour_in2 = 3'b000;
+			xin = xin_prev2;
+			yin = yin_prev2;
+		end
+		
+		if (~KEY[3])
+		begin
+			drawScreen = 6'b000001;
+			xcounter = 6'b000000;
+			ycounter = 6'b000000;
+			colour_in1 = 3'b000;
+			colour_in2 = 3'b000;
+			xin = xin_prev1;
+			yin = yin_prev1;
+		end
+		
 		// ### FIRST ### color = 011 is background
 		
 		if (SW[17]) // top row most left
@@ -119,6 +159,17 @@ module project
 			yin = 7'b0000110;
 			colour_in1 = 3'b001;
 			colour_in2 = 3'b010;
+			if (isFlipped ==  2'b00)
+			begin
+				xin_prev1 = xin;
+				yin_prev1 = yin;
+			end
+			if (isFlipped ==  2'b01)
+			begin
+				xin_prev2 = xin;
+				yin_prev2 = yin;
+				isFlipped =  2'b00;
+			end
 		end
 		
 		if (SW[16])
@@ -127,6 +178,17 @@ module project
 			yin = 7'b0000110;
 			colour_in1 = 3'b011;
 			colour_in2 = 3'b100;
+			if (isFlipped ==  2'b00)
+			begin
+				xin_prev1 = xin;
+				yin_prev1 = yin;
+			end
+			if (isFlipped ==  2'b01)
+			begin
+				xin_prev2 = xin;
+				yin_prev2 = yin;
+				isFlipped =  2'b00;
+			end
 		end
 		
 		if (SW[15])
@@ -135,6 +197,17 @@ module project
 			yin = 7'b0000110;
 			colour_in1 = 3'b010;
 			colour_in2 = 3'b011;
+			if (isFlipped ==  2'b00)
+			begin
+				xin_prev1 = xin;
+				yin_prev1 = yin;
+			end
+			if (isFlipped ==  2'b01)
+			begin
+				xin_prev2 = xin;
+				yin_prev2 = yin;
+				isFlipped =  2'b00;
+			end
 		end
 		
 		if (SW[14])
