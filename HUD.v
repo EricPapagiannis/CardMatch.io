@@ -32,7 +32,10 @@ module FinalB58(SW, EXT_IO, LEDR, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7
 
     input [17:0] SW;
     reg enable;
-
+    input CLOCK_50;
+    wire [27:0] outRD2;
+    wire [3:0] outDC;
+	
     RateDivider rd2(.enable(1'b1), 
 	.reset_n(SW[17]),
 	.clock(CLOCK_50),
