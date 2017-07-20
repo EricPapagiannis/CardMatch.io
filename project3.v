@@ -104,7 +104,8 @@ module project
 			end
 				
 			if (xcounter >= 6'b001001)
-			begincardDrawn = 1'b1;
+			begin
+			    cardDrawn = 1'b1;
 			    colour_in = colour_in2;
 			end
 			
