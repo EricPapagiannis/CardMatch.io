@@ -110,11 +110,7 @@ module project
 		else
 		begin
 		
-			if (isFlipped == 2'b00)
-			begin
-			isFlipped = isFlipped + 2'b01;
-			end
-			if (isFlipped == 2'b01)
+			if (isFlipped == 2'b00 || isFlipped == 2'b01)
 			begin
 			isFlipped = isFlipped + 2'b01;
 			end
@@ -159,12 +155,12 @@ module project
 			yin = 7'b0000110;
 			colour_in1 = 3'b001;
 			colour_in2 = 3'b010;
-			if (isFlipped ==  2'b00)
+			if (isFlipped ==  2'b01)
 			begin
 				xin_prev1 = xin;
 				yin_prev1 = yin;
 			end
-			if (isFlipped ==  2'b01)
+			if (isFlipped ==  2'b10)
 			begin
 				xin_prev2 = xin;
 				yin_prev2 = yin;
@@ -178,12 +174,12 @@ module project
 			yin = 7'b0000110;
 			colour_in1 = 3'b011;
 			colour_in2 = 3'b100;
-			if (isFlipped ==  2'b00)
+			if (isFlipped ==  2'b01)
 			begin
 				xin_prev1 = xin;
 				yin_prev1 = yin;
 			end
-			if (isFlipped ==  2'b01)
+			if (isFlipped ==  2'b10)
 			begin
 				xin_prev2 = xin;
 				yin_prev2 = yin;
@@ -197,12 +193,12 @@ module project
 			yin = 7'b0000110;
 			colour_in1 = 3'b010;
 			colour_in2 = 3'b011;
-			if (isFlipped ==  2'b00)
+			if (isFlipped ==  2'b01)
 			begin
 				xin_prev1 = xin;
 				yin_prev1 = yin;
 			end
-			if (isFlipped ==  2'b01)
+			if (isFlipped ==  2'b10)
 			begin
 				xin_prev2 = xin;
 				yin_prev2 = yin;
