@@ -54,7 +54,7 @@ module FinalB58
 	wire card1, card2;
     wire [5:0] tc1, tc2;
 	 wire [1:0] player;
-	 wire splayer;
+	 wire [1:0] splayer;
     // Instansiate datapath
 	 datapath d0(.clk(CLOCK_50),
     .resetn(KEY[0]),
@@ -63,6 +63,7 @@ module FinalB58
 	.card2(card2),
 	.cc1(tc1),
 	.cc2(tc2),
+	.ply(splayer),
     .output_X(x), 
 	.output_Y(y),
 	.match_the_card(writeEn),
@@ -72,7 +73,7 @@ module FinalB58
 	.LEDS(LEDR[9:0]),
 	.is_correct(splayer)
 	);
-
+	assign LEDG[1:0] = splayer;
     // Instansiate FSM control
      FSM c0(.clk(CLOCK_50),
     .resetn(KEY[0]),
@@ -83,14 +84,12 @@ module FinalB58
 	.card2(card2)
 	);
  
-    FSM_Players p0(.clk(CLOCK_50),
+    /*FSM_Players p0(.clk(CLOCK_50),
     .resetn(KEY[0]),
     .go(splayer),
 	.writeEn(writeEn),
    .player(player)
-	);
-	
-	assign LEDG[1:0] = player;
+	);*/
 
     /*FSM_Joystick j0(.clk(CLOCK_50),
     .resetn(KEY[0]),
@@ -192,7 +191,7 @@ module FSM_Players(
 					
         // default:    // don't need 	assign LEDS[17:11] = TEMP_match; default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
-    end // enable_signals
+    end // enable_signalsnegedge
    
     // current_state registers
     always@(posedge clk)
@@ -234,7 +233,7 @@ module FSM(
 		//State for choose card 1card1
 		//State for choose card 2
 		//State for match   reg out;
-		//State for no match
+		//State for no m1'b0atch
 					 
                 choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Loop in current state until value is input
 				
@@ -302,13 +301,14 @@ module datapath(
     input card1, card2, 
 	 input [5:0] cc1, 
 	 input [5:0] cc2,
+	 input [1:0] ply,
 	 input match_the_card,
 	 output [9:0] LEDS,
     output [7:0] output_X, 
 	output [6:0] output_Y,
 	output [5:0] card_chosen_1, card_chosen_2,
 	output reg [2:0] data_result_colour,
-	output reg is_correct
+	output reg [1:0] is_correct
     );
     reg [5:0] otp = 6'b000000;
 	 reg [5:0] c1;
@@ -329,12 +329,14 @@ module datapath(
 				if (cc1 == cc2)
 				begin
 					mat <= 1'b1;
-					is_correct <= 1'b1;
+					is_correct <= ply;
 				end
 				else
 				begin
+					otp <= 6'b100001;
 					mat <= 1'b0;
-					is_correct <= 1'b0;
+					is_correct <= ~ply;
+					c2 <= c1;
 				end
 
 			end
@@ -596,3 +598,4 @@ module datapath(
 	assign output_X_f = output_X;*/
 
 endmodule
+ 
