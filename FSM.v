@@ -52,19 +52,20 @@ module FinalB58
 	// Put your code here. Your code should produce signals x,y,colour and writeEn/plot
 	// for the VGA controller, in addition to any other functionality your design may require.
 	wire card1, card2;
-    wire [5:0] tc1, tc2;
+    wire [17:0] tc1;
+	wire [17:0] tc2;
 	 wire [1:0] player;
 	 wire [1:0] splayer;
     // Instansiate datapath
 	 datapath d0(.clk(CLOCK_50),
     .resetn(KEY[0]),
-    .TEMP_match(SW[9:0]),
+    .TEMP_match(SW[17:0]),
     .card1(card1), 
 	.card2(card2),
 	.cc1(tc1),
 	.cc2(tc2),
 	.ply(splayer),
-    .output_X(x), 
+    .output_X(x),
 	.output_Y(y),
 	.match_the_card(writeEn),
 	.card_chosen_1(tc1),
@@ -297,22 +298,23 @@ endmodule
 module datapath(
     input clk,
     input resetn,
-    input [9:0] TEMP_match,
+    input [17:0] TEMP_match,
     input card1, card2, 
-	 input [5:0] cc1, 
-	 input [5:0] cc2,
+	 input [17:0] cc1, 
+	 input [17:0] cc2,
 	 input [1:0] ply,
 	 input match_the_card,
 	 output [9:0] LEDS,
     output [7:0] output_X, 
 	output [6:0] output_Y,
-	output [5:0] card_chosen_1, card_chosen_2,
+	output [17:0] card_chosen_1,
+	output [17:0] card_chosen_2,
 	output reg [2:0] data_result_colour,
 	output reg [1:0] is_correct
     );
     reg [5:0] otp = 6'b000000;
-	 reg [5:0] c1;
-	 reg [5:0] c2;
+	 reg [17:0] c1;
+	 reg [17:0] c2;
 	 reg mat;
 	 always@(posedge clk)
 	 begin
@@ -325,18 +327,38 @@ module datapath(
 			if (match_the_card)
 			begin
 				otp <= 6'b111111;
-				
-				if (cc1 == cc2)
+				/*
+				((cc1 == 18'b100000000000000000)&& (cc2 == 18'b000000001000000000)|| 
+					 (cc1 == 18'b010000000000000000)&& (cc2 == 18'b000000000000000001)|| 
+					 (cc1 == 18'b001000000000000000)&& (cc2 == 18'b000000000000010000)|| 
+					 (cc1 == 18'b000100000000000000)&& (cc2 == 18'b000000000000001000)|| 
+					 (cc1 == 18'b000010000000000000)&& (cc2 == 18'b000000000000000100)|| 
+					 (cc1 == 18'b000001000000000000)&& (cc2 == 18'b000000100000000000)|| 
+					 (cc1 == 18'b000000001000000000)&& (cc2 == 18'b000000000010000000)|| 
+					 (cc1 == 18'b000000000100000000)&& (cc2 == 18'b000000000000100000)|| 
+					 (cc1 == 18'b100000000010000000)&& (cc2 == 18'b000000000000000010))
+				*/
+				if ((cc1[17] == 1'b1) && (cc2[10] == 1'b1)|| 
+					 (cc1[16] == 1'b1) && (cc2[0] == 1'b1)|| 
+					 (cc1[15] == 1'b1) && (cc2[4] == 1'b1)|| 
+					 (cc1[14] == 1'b1) && (cc2[3] == 1'b1)|| 
+					 (cc1[13] == 1'b1) && (cc2[2] == 1'b1)|| 
+					 (cc1[12] == 1'b1) && (cc2[11] == 1'b1)|| 
+					 (cc1[9] == 1'b1) && (cc2[7] == 1'b1)|| 
+					 (cc1[8] == 1'b1) && (cc2[5] == 1'b1)|| 
+					 (cc1[6] == 1'b1) && (cc2[1] == 1'b1))
 				begin
 					mat <= 1'b1;
 					is_correct <= ply;
+					//otp <= 6'b101001;
 				end
 				else
 				begin
 					otp <= 6'b100001;
 					mat <= 1'b0;
 					is_correct <= ~ply;
-					c2 <= c1;
+					c2 <= 18'b100000000000000000;
+					c1 <= 18'b000000010000000000;
 				end
 
 			end
@@ -361,241 +383,6 @@ module datapath(
 	assign LEDS[9] = mat;
 	assign card_chosen_1 = c1;
 	assign card_chosen_2 = c2;
-	/*output reg [7:0] output_X; 
-	output reg [6:0] output_Y;
-	
-    // input registers
-    reg [7:0] x;
-	reg [6:0] y;
-	reg [2:0] c;
-
-    // Registers a, b, c, x with respective input logic
-    always@(posedge clk) begin
-        if(!resetn) begin
-            x <= 7'b0; 
-            y <= 6'b0; 
-            c <= 3'b0; 
-        endif (SW[17]) // top row most left
-		begin
-			xin = 8'b00000111; //card coordinates
-			yin = 7'b0000110;
-			colour_in1 = 3'b001;
-			colour_in2 = 3'b010;
-			if (isFlipped ==  2'b01)
-			begin
-				xin_prev1 = xin;
-				yin_prev1 = yin;
-			end
-			if (isFlipped ==  2'b10)
-			begin
-				xin_prev2 = xin;
-				yin_prev2 = yin;
-				isFlipped =  2'b00;
-			end
-		end
-		
-		if (SW[16])
-		begin
-			xin = 8'b00100001; //card coordinates
-			yin = 7'b0000110;
-			colour_in1 = 3'b011;
-			colour_in2 = 3'b100;
-			if (isFlipped ==  2'b01)
-			begin
-				xin_prev1 = xin;
-				yin_prev1 = yin;
-			end
-			if (isFlipped ==  2'b10)
-			begin
-				xin_prev2 = xin;
-				yin_prev2 = yin;
-				isFlipped =  2'b00;
-			end
-		end
-		
-		if (SW[15])
-		begin
-			xin = 8'b00111011; //card coordinates
-			yin = 7'b0000110;
-			colour_in1 = 3'b010;
-			colour_in2 = 3'b011;
-			if (isFlipped ==  2'b01)
-			begin
-				xin_prev1 = xin;
-				yin_prev1 = yin;
-			end
-			if (isFlipped ==  2'b10)
-			begin
-				xin_prev2 = xin;
-				yin_prev2 = yin;
-				isFlipped =  2'b00;
-			end
-		end
-		
-		if (SW[14])
-		begin
-			xin = 8'b01010101; //card coordinates
-			yin = 7'b0000110;
-			colour_in1 = 3'b010;
-			colour_in2 = 3'b111;
-		end
-		
-		if (SW[13])
-		begin
-			xin = 8'b01101111; //card coordinates
-			yin = 7'b0000110;
-			colour_in1 = 3'b111;
-			colour_in2 = 3'b100;
-		end
-		
-		if (SW[12]) // top row most right
-		begin
-			xin = 8'b10001001; //card coordinates
-			yin = 7'b0000110;
-			colour_in1 = 3'b101;
-			colour_in2 = 3'b001;
-		end
-		
-		// #### SECOND ROW ### b0101101
-
-		if (SW[11]) // second row most left
-		begin
-			xin = 8'b00000111; //card coordinates
-			yin = 7'b0101101;
-			colour_in1 = 3'b101;
-			colour_in2 = 3'b001;
-		end
-		
-		if (SW[10])
-		begin
-			xin = 8'b00100001; //card coordinates
-			yin = 7'b0101101;
-			colour_in1 = 3'b001;
-			colour_in2 = 3'b010;
-		end
-		
-		if (SW[9])
-		begin
-			xin = 8'b00111011; //card coordinates
-			yin = 7'b0101101;
-			colour_in1 = 3'b100;
-			colour_in2 = 3'b101;
-		end
-		
-		if (SW[8])
-		begin
-			xin = 8'b01010101; //card coordinates
-			yin = 7'b0101101;
-			colour_in1 = 3'b101;
-			colour_in2 = 3'b111;
-		end
-		
-		if (SW[7])
-		begin
-			xin = 8'b01101111; //card coordinates
-			yin = 7'b0101101;
-			colour_in1 = 3'b100;
-			colour_in2 = 3'b101;
-		end
-		
-		if (SW[6]) // second row most right
-		begin
-			xin = 8'b10001001; //card coordinates
-			yin = 7'b0101101;
-			colour_in1 = 3'b100;
-			colour_in2 = 3'b001;
-		end
-		
-		// #### THIRD ROW ###b1010101
-
-		if (SW[5]) // third row most left
-		begin
-			xin = 8'b00000111; //card coordinates
-			yin = 7'b1010011;
-			colour_in1 = 3'b101;
-			colour_in2 = 3'b111;
-		end
-		
-		if (SW[4])
-		beginPlayer1W: begin
-					player = 2'b01;
-			xin = 8'b00100001; //card coordinates
-			yin = 7'b1010011;
-			colour_in1 = 3'b010;
-			colour_in2 = 3'b011;
-		end
-		
-		if (SW[3])
-		begin
-			xin = 8'b00111011; //card coordinates
-			yin = 7'b1010011;
-			colour_in1 = 3'b010;
-			colour_in2 = 3'b111;
-		end
-		
-		if (SW[2])
-		begin
-			xin = 8'b01010101; //card coordinates
-			yin = 7'b1010011;
-			colour_in1 = 3'b111;
-			colour_in2 = 3'b100;
-		end
-		
-		if (SW[1])
-		begin
-			xin = 8'b01101111; //card coordinates
-			yin = 7'b1010011;
-			colour_in1 = 3'b100;
-			colour_in2 = 3'b001;
-		end
-		
-		if (SW[0]) // third row most right
-		begin
-			xin = 8'b10001001; //card coordinates
-			yin = 7'b1010011;
-			colour_in1 = 3'b011;
-			colour_in2 = 3'b100;
-		end
-        else begin
-            if(ld_x)
-                x <= {1'b0, data_in};
-            if(ld_y)
-                y <= data_in;
-            if(1'b1)
-                c <= colour_in;
-        end
-    end
-	
-	reg [3:0] counter;output_Y
-	always@(posedge clk) begin
-		if(!resetn) 
-			begin
-				output_X <= 7'b0;
-				output_Y <= 6'b0;
-				data_result_colour <= 3'b0;  
-			end
-        else 
-            output_X <= x;
-			output_Y <= y;
-			data_result_colour <= c;
-			
-        if(!resetn) 
-			begin
-				counter <= 4'b00; 
-			end 
-		else 
-			begin
-			if (counter == 4'b1111)
-				counter <= 4'b0000;
-			else
-				counter <= counter + 1'b1;
-				output_X <= x + counter[1:0];
-				output_Y <= y + counter[3:2];
-			end
-	end
-	
-	assign output_X_f = output_X;
-	assign output_X_f = output_X;*/
 
 endmodule
  
