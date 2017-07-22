@@ -16,13 +16,15 @@ module project
 		VGA_G,	 						//	VGA Green[9:0]
 		VGA_B,   						//	VGA Blue[9:0]
 		LEDR,
-		LEDG
+		LEDG,
+		HEX0,
+		HEX2
 	);
 
 	input			CLOCK_50;				//	50 MHz
 	input   [17:0]   SW;
 	input   [3:0]   KEY;
-	
+	output [6:0] HEX0, HEX2;
 	// Declare your inputs and outputs here
 	// Do not change the following outputs
 	output			VGA_CLK;   				//	VGA Clock
@@ -88,12 +90,14 @@ module project
 	.card2(card2),
 	.cc1(tc1),
 	.cc2(tc2),
+	.Key(KEY[1]),
 	.ply(splayer),
 	.match_the_card(writeEn),
 	.card_chosen_1(tc1),
 	.card_chosen_2(tc2),
 	.LEDS(LEDR[9:0]),
-	.is_correct(splayer)
+	.is_correct(splayer),
+	.isMatch(m)
 	);
 	assign LEDG[1:0] = splayer;
     // Instansiate FSM control
@@ -105,6 +109,15 @@ module project
    .card1(card1), 
 	.card2(card2)
 );
+
+ScoreCounter q (m, KEY[0], KEY[1], p1ScoreCounter);
+ScoreCounter q2 (m, KEY[0], KEY[1], p2ScoreCounter);
+	wire [3:0] p1ScoreCounter;//the wire that connects the score counter the hexes for player 1
+	wire [3:0] p2ScoreCounter;//the wire that connects the score counter the hexes for player 2
+	wire m;
+	SevenSegDecoder my_display9(HEX0, p1ScoreCounter[3:0]);//player 1 score hex output
+	SevenSegDecoder my_display10(HEX2, p2ScoreCounter[3:0]);//player 2 score hex output
+
  
     /*FSM_Players p0(.clk(CLOCK_50),
     .resetn(KEY[0]),
@@ -257,16 +270,22 @@ module datapath(
 	 input [17:0] cc1, 
 	 input [17:0] cc2,
 	 input [1:0] ply,
+	 input Key,
 	 input match_the_card,
 	 output [9:0] LEDS,
 	output [17:0] card_chosen_1,
 	output [17:0] card_chosen_2,
-	output reg [1:0] is_correct
+	output reg [1:0] is_correct,
+	output isMatch
     );
     reg [5:0] otp = 6'b000000;
 	 reg [17:0] c1;
 	 reg [17:0] c2;
 	 reg mat;
+	 reg s1;
+	 reg s2;
+	 reg [3:0] p1score = 4'b0000;
+	 reg [3:0] p2score = 4'b0000;
 	 always@(posedge clk)
 	 begin
 		if (!resetn)
@@ -275,6 +294,7 @@ module datapath(
 		end
 		else
 		begin
+			mat <= 1'b0;
 			if (match_the_card)
 			begin
 				otp <= 6'b111111;
@@ -311,14 +331,34 @@ module datapath(
 					mat <= 1'b1;
 					is_correct <= ply;
 					//otp <= 6'b101001;
+					c1 <= 18'b111111111111111110;
+					c2 <= 18'b111111111111111110;
+				
+						/*if (ply[0] == 1'b0)
+						begin
+							p1score <= p1score + 4'b0001;
+						end
+						else
+						begin
+							p2score <= p2score + 4'b0001;
+						end*/
+					
 				end
-				else
+				else if (cc1 == 18'b111111111111111110&& cc2 == 18'b111111111111111110)
+				begin
+					otp <= 6'b101001;
+
+				end
+				else if (cc1 != 18'b111111111111111111&& cc2 != 18'b111111111111111111)
 				begin
 					otp <= 6'b100001;
 					mat <= 1'b0;
 					is_correct <= ~ply;
-					c1 <= 18'b010000000000000000;
-					c2 <= 18'b000000000000000001;
+					//c1 <= 18'b010000000000000000;
+					//c2 <= 18'b000000000000000001;
+					c1 <= 18'b111111111111111111;
+					c2 <= 18'b111111111111111111;
+
 				end
 
 			end
@@ -326,7 +366,7 @@ module datapath(
 			begin
 				otp <= 6'b000001;
 				c1 <= TEMP_match;
-				
+				 
 				//INSERT IF STATEMENTS HERE
 				
 			end
@@ -343,6 +383,7 @@ module datapath(
 	assign LEDS[9] = mat;
 	assign card_chosen_1 = c1;
 	assign card_chosen_2 = c2;
+	assign isMatch = mat;
 
 endmodule
 
@@ -791,3 +832,52 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 		// Instansiate FSM control
 		// control c0(...);
 endmodule
+
+module ScoreCounter(enable, reset_n, clock, q);
+	output reg [3:0] q; // declare q
+	input clock, enable, reset_n;
+	always @(posedge clock) // triggered every time clock rises
+		begin
+			if (reset_n == 1'b1) // when reset is high
+				q <= 1'b0; // q is set to 0
+			else if (enable == 1'b1) //when enabled
+				q <= q + 1'b1; // increment q
+			else if (enable == 1'b0) // hold when not enabled
+				q <= q;
+			else if (q == 4'b1001)//if it reaches 9
+				q <= 1'b0;//reset to 0
+	end
+endmodule
+
+module SevenSegDecoder(hex_out, inputs);
+    output reg [6:0] hex_out;
+    input [3:0] inputs;
+    always @(inputs)
+        case (inputs)
+        4'h0: hex_out = 7'b1000000;
+        4'h1: hex_out = 7'b1111001;
+        4'h2: hex_out = 7'b0100100;
+        4'h3: hex_out = 7'b0110000;
+        4'h4: hex_out = 7'b0011001;
+        4'h5: hex_out = 7'b0010010;
+        4'h6: hex_out = 7'b0000010;
+        4'h7: hex_out = 7'b1111000;
+        4'h8: hex_out = 7'b0000000;
+        4'h9: hex_out = 7'b0011000;
+        4'hA: hex_out = 7'b0001000;
+        4'hB: hex_out = 7'b0000011;
+        4'hC: hex_out = 7'b1000110;
+        4'hD: hex_out = 7'b0100001;
+        4'hE: hex_out = 7'b0000110;
+        4'hF: hex_out = 7'b0001110;
+        default: hex_out = 7'b1111111;
+	//For digits above 10, display the least significant bit
+	//Set the default as the letter P for displaying players
+    endcase
+endmodule
+
+
+/*
+Since the output will be in decimal and not in hex, this module will represent the highest significant bit of a 2 bit number number.
+For example, when fed (12) it will output (1), when fed (8) it will output (0)
+*/
