@@ -110,8 +110,8 @@ module project
 	.card2(card2)
 );
 
-ScoreCounter q (m, KEY[0], KEY[1], p1ScoreCounter);
-ScoreCounter q2 (m, KEY[0], KEY[1], p2ScoreCounter);
+ScoreCounterP1 q (m, KEY[0], KEY[1], p1ScoreCounter, splayer);
+ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
 	wire [3:0] p1ScoreCounter;//the wire that connects the score counter the hexes for player 1
 	wire [3:0] p2ScoreCounter;//the wire that connects the score counter the hexes for player 2
 	wire m;
@@ -347,17 +347,18 @@ module datapath(
 				else if (cc1 == 18'b111111111111111110&& cc2 == 18'b111111111111111110)
 				begin
 					otp <= 6'b101001;
-
+					mat <= 1'b1;
+					
 				end
-				else if (cc1 != 18'b111111111111111111&& cc2 != 18'b111111111111111111)
+				else if (cc1 != 18'b000000000000000000&& cc2 != 18'b000000000000000000)
 				begin
 					otp <= 6'b100001;
 					mat <= 1'b0;
 					is_correct <= ~ply;
 					//c1 <= 18'b010000000000000000;
 					//c2 <= 18'b000000000000000001;
-					c1 <= 18'b111111111111111111;
-					c2 <= 18'b111111111111111111;
+					c1 <= 18'b000000000000000000;
+					c2 <= 18'b000000000000000000;
 
 				end
 
@@ -833,14 +834,15 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 		// control c0(...);
 endmodule
 
-module ScoreCounter(enable, reset_n, clock, q);
+module ScoreCounterP1(enable, reset_n, clock, q, player);
 	output reg [3:0] q; // declare q
 	input clock, enable, reset_n;
+	input [1:0] player;
 	always @(posedge clock) // triggered every time clock rises
 		begin
-			if (reset_n == 1'b1) // when reset is high
+			if (reset_n == 1'b0) // when reset is high
 				q <= 1'b0; // q is set to 0
-			else if (enable == 1'b1) //when enabled
+			else if (enable == 1'b1 && ~player[0]) //when enabled
 				q <= q + 1'b1; // increment q
 			else if (enable == 1'b0) // hold when not enabled
 				q <= q;
@@ -848,6 +850,24 @@ module ScoreCounter(enable, reset_n, clock, q);
 				q <= 1'b0;//reset to 0
 	end
 endmodule
+
+module ScoreCounterP2(enable, reset_n, clock, q, player);
+	output reg [3:0] q; // declare q
+	input clock, enable, reset_n;
+	input [1:0] player;
+	always @(posedge clock) // triggered every time clock rises
+		begin
+			if (reset_n == 1'b0) // when reset is high
+				q <= 1'b0; // q is set to 0
+			else if (enable == 1'b1 && player[0]) //when enabled
+				q <= q + 1'b1; // increment q
+			else if (enable == 1'b0) // hold when not enabled
+				q <= q;
+			else if (q == 4'b1001)//if it reaches 9
+				q <= 1'b0;//reset to 0
+	end
+endmodule
+
 
 module SevenSegDecoder(hex_out, inputs);
     output reg [6:0] hex_out;
