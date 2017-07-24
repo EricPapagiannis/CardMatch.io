@@ -18,13 +18,15 @@ module project
 		LEDR,
 		LEDG,
 		HEX0,
-		HEX2
+		HEX2,
+		HEX4,
+		HEX5
 	);
 
 	input			CLOCK_50;				//	50 MHz
 	input   [17:0]   SW;
 	input   [3:0]   KEY;
-	output [6:0] HEX0, HEX2;
+	output [6:0] HEX0, HEX2, HEX4, HEX5;
 	// Declare your inputs and outputs here
 	// Do not change the following outputs
 	output			VGA_CLK;   				//	VGA Clock
@@ -169,6 +171,37 @@ ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
 	end
 	assign LEDG[0] = switch;
 	assign LEDR[9] = out;*/
+	reg enable;
+	wire [5:0] outDC ;
+	
+	RateDivider rd2(.enable(1'b1), //Will always be enabled, timer does not stop
+		    .reset_n(1'b1),//reset for both this and the output timer is SW17. if held on, will stop at 50 million
+		    .clock(CLOCK_50),//50mhz clk
+		    .q(outRD2),//output that will determine if the timer can go down 1 second
+		    .d(28'b0010111110101111000001111111), //50 million - 1
+		    .ParLoad(SW[16])//when flipped, will immediately reset to 50 million since that is the d value constant
+    );
+	
+    DisplayCounter dc(.enable(enable),//Counter that will count in seconds down from 15
+			  .reset_n(1'b1),//Same reset as rate divider, will reset to 15
+			  .clock(CLOCK_50),//50mhz clk
+			  .val(outDC)//output that will be fed to hexes
+    );
+	//Always block that will check if the rate divider reaches 0, if so enable the timer to decrement one value.
+	
+	always @(*)
+	begin
+		 
+		 if (outRD2 == 28'b0000000000000000000000000000)
+		 begin
+			enable = 1'b1;
+		 end
+	end
+        
+	SevenSegDecoder my_display7(HEX4, outDC[2:0]);//Display least significant bit of timer on hex2
+	SevenSegDecoder my_display8(HEX5, outDC[5:3]);//Display highest significant bit of timer on hex3
+	
+	
 endmodule
 
 
@@ -901,3 +934,41 @@ endmodule
 Since the output will be in decimal and not in hex, this module will represent the highest significant bit of a 2 bit number number.
 For example, when fed (12) it will output (1), when fed (8) it will output (0)
 */
+
+module RateDivider(enable, reset_n, clock, q, d, ParLoad);
+	output reg [27:0] q; // declare q
+	input [27:0] d; // declare d
+	input clock, enable, reset_n, ParLoad;
+	always @(posedge clock) // triggered every time clock rises
+		begin
+		if (reset_n == 1'b0) // when Clear b is 0
+			q <= 0; // q is set to 0
+		else if (ParLoad == 1'b1) // Check if parallel load
+			q <= d; // load d
+		else if (q == 28'b0000000000000000000000000000) // when q is the minimum value for the counter
+			q <= d; // q reset back to its original value
+		else if (enable == 1'b1) // increment q only when Enable is 1
+			//q <= q + 1'b1; // increment q
+			q <= q - 1'b1; // decrement q
+		else if (enable == 1'b0)
+			q <= q; 
+	end
+endmodule
+
+
+module DisplayCounter(enable, reset_n, clock, val);
+	output reg [3:0] val; // declare q
+	input clock, enable, reset_n;
+	always @(posedge clock) // triggered every time clock rises
+		begin
+			if (reset_n == 1'b0) // when reset is high
+				val <= 6'b111100; // q is set to 15
+			else if (enable == 1'b1) // when enabled
+				val <= val - 1'b1; // count down 1
+			else if (enable == 1'b0) // hold when not enabled
+				val <= val;
+			else if (val == 1'b0)//once it reaches 0, reset to 15
+				val <= 6'b111100;
+		end
+endmodule
+
