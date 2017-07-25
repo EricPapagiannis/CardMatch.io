@@ -112,8 +112,8 @@ module project
 	.card2(card2)
 );
 
-ScoreCounterP1 q (m, KEY[0], KEY[1], p1ScoreCounter, splayer);
-ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
+	ScoreCounterP1 q (m, KEY[0], KEY[1], p1ScoreCounter, splayer);
+	ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
 	wire [3:0] p1ScoreCounter;//the wire that connects the score counter the hexes for player 1
 	wire [3:0] p2ScoreCounter;//the wire that connects the score counter the hexes for player 2
 	wire m;
@@ -187,24 +187,43 @@ ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
 		    .clock(CLOCK_50),//50mhz clk
 		    .val(outDC)//output that will be fed to hexes
     );
-	//Always block that will check if the rate divider reaches 0, if so enable the timer to decrement one value.
 	
-	always @(*)
-	begin
-		 
-		 if (outRD2 == 28'b0000000000000000000000000000)
-		 	begin
-				enable = 1'b1;
-		 	end
-		else
-			begin
-				enable = 1'b0;
-			end
-	end
+	
+	
         
 	SevenSegDecoder my_display7(HEX4, outDC[3:0]);//Display least significant bit of timer on hex2
 	SevenSegDecoder my_display8(HEX5, outDC[7:4]);//Display highest significant bit of timer on hex3
 	
+	reg leadEnable;
+	wire [1:0] outLead;
+	DisplayLead(.enable(leadEnable), //Enabler that will trigger when timer reaches 0
+				.score1(p1ScoreCounter), //Input player 1 current score
+				.score2(p2ScoreCounter), //Input player 2 current score
+				.lead(outLead) //Output for the current leader that will be sent to hexes
+				);
+	//Always block that will check if the rate divider reaches 0, if so enable the timer to decrement one value.
+	//Always block that will enable the lead display to change only when the timer reaches 0
+	always @(*)
+	begin
+		 //Conditions for timer
+		 if (outRD2 == 28'b0000000000000000000000000000)
+		 	begin
+				enable <= 1'b1;
+		 	end
+		else
+			begin
+				enable <= 1'b0;
+			end
+		//Conditions for lead display
+		if (outDC == 8'b00000000)
+			begin
+				leadEnable <= 1'b1;
+			end
+		else
+			begin
+				leadEnable <= 1'b0;
+			end
+	end
 	
 endmodule
 
@@ -977,7 +996,7 @@ module DisplayCounter(enable, reset_n, clock, val);
 endmodule
 
 module DisplayLead(enable, score1, score2, lead);
-	output reg [2:0] lead; //declare the lead
+	output reg [1:0] lead; //declare the lead
 	input enable;
 	input [3:0] score1, score2;
 	always @(posedge enable)
