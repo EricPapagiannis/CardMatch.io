@@ -172,20 +172,20 @@ ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
 	assign LEDG[0] = switch;
 	assign LEDR[9] = out;*/
 	reg enable;
-	wire [5:0] outDC ;
+	wire [7:0] outDC ;
 	
 	RateDivider rd2(.enable(1'b1), //Will always be enabled, timer does not stop
 		    .reset_n(1'b1),//reset for both this and the output timer is SW17. if held on, will stop at 50 million
 		    .clock(CLOCK_50),//50mhz clk
 		    .q(outRD2),//output that will determine if the timer can go down 1 second
 		    .d(28'b0010111110101111000001111111), //50 million - 1
-		    .ParLoad(SW[16])//when flipped, will immediately reset to 50 million since that is the d value constant
+		    .ParLoad(1'b0)//when flipped, will immediately reset to 50 million since that is the d value constant
     );
 	
     DisplayCounter dc(.enable(enable),//Counter that will count in seconds down from 15
-			  .reset_n(1'b1),//Same reset as rate divider, will reset to 15
-			  .clock(CLOCK_50),//50mhz clk
-			  .val(outDC)//output that will be fed to hexes
+		    .reset_n(1'b1),//Same reset as rate divider, will reset to 15
+		    .clock(CLOCK_50),//50mhz clk
+		    .val(outDC)//output that will be fed to hexes
     );
 	//Always block that will check if the rate divider reaches 0, if so enable the timer to decrement one value.
 	
@@ -193,13 +193,17 @@ ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
 	begin
 		 
 		 if (outRD2 == 28'b0000000000000000000000000000)
-		 begin
-			enable = 1'b1;
-		 end
+		 	begin
+				enable = 1'b1;
+		 	end
+		else
+			begin
+				enable = 1'b0;
+			end
 	end
         
-	SevenSegDecoder my_display7(HEX4, outDC[2:0]);//Display least significant bit of timer on hex2
-	SevenSegDecoder my_display8(HEX5, outDC[5:3]);//Display highest significant bit of timer on hex3
+	SevenSegDecoder my_display7(HEX4, outDC[3:0]);//Display least significant bit of timer on hex2
+	SevenSegDecoder my_display8(HEX5, outDC[7:4]);//Display highest significant bit of timer on hex3
 	
 	
 endmodule
@@ -957,18 +961,18 @@ endmodule
 
 
 module DisplayCounter(enable, reset_n, clock, val);
-	output reg [3:0] val; // declare q
+	output reg [7:0] val; // declare q
 	input clock, enable, reset_n;
 	always @(posedge clock) // triggered every time clock rises
 		begin
 			if (reset_n == 1'b0) // when reset is high
-				val <= 6'b111100; // q is set to 15
+				val <= 8'b00111100; // q is set to 15
 			else if (enable == 1'b1) // when enabled
 				val <= val - 1'b1; // count down 1
 			else if (enable == 1'b0) // hold when not enabled
 				val <= val;
 			else if (val == 1'b0)//once it reaches 0, reset to 15
-				val <= 6'b111100;
+				val <= 8'b00111100;
 		end
 endmodule
 
