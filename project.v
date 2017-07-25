@@ -976,3 +976,17 @@ module DisplayCounter(enable, reset_n, clock, val);
 		end
 endmodule
 
+module DisplayLead(enable, score1, score2, lead);
+	output reg [2:0] lead; //declare the lead
+	input enable;
+	input [3:0] score1, score2;
+	always @(posedge enable)
+		begin
+			if (score1 > score2) //If player1 is in the lead
+				lead <= 2'b01;// Set the output to be 1
+			else if (score2 > score1) //If player2 is in the lead
+				lead <= 2'b10; //Set the output to be 2
+			else // If there is a tie
+				lead <= 2'b00; //Set the output to be 0
+		end
+	endmodule
