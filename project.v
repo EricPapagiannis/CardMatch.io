@@ -225,6 +225,9 @@ module project
 			end
 	end
 	
+	SevenSegDecoder my_display9(HEX6, outLead);//Display the lead on hex 6
+	
+	
 endmodule
 
 
