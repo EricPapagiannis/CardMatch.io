@@ -20,13 +20,15 @@ module project
 		HEX0,
 		HEX2,
 		HEX4,
-		HEX5
+		HEX5,
+		HEX6,
+		HEX7
 	);
 
 	input			CLOCK_50;				//	50 MHz
 	input   [17:0]   SW;
 	input   [3:0]   KEY;
-	output [6:0] HEX0, HEX2, HEX4, HEX5;
+	output [6:0] HEX0, HEX2, HEX4, HEX5, HEX6, HEX7;
 	// Declare your inputs and outputs here
 	// Do not change the following outputs
 	output			VGA_CLK;   				//	VGA Clock
@@ -117,9 +119,9 @@ module project
 	wire [3:0] p1ScoreCounter;//the wire that connects the score counter the hexes for player 1
 	wire [3:0] p2ScoreCounter;//the wire that connects the score counter the hexes for player 2
 	wire m;
-	SevenSegDecoder my_display9(HEX0, p1ScoreCounter[3:0]);//player 1 score hex output
-	SevenSegDecoder my_display10(HEX2, p2ScoreCounter[3:0]);//player 2 score hex output
-
+	SevenSegDecoder mydisplay9(HEX2, p1ScoreCounter[3:0]);//player 1 score hex output
+	SevenSegDecoder mydisplay10(HEX0, p2ScoreCounter[3:0]);//player 2 score hex output
+	SevenSegDecoder mydisplay11(HEX7, 4'hA);
  
     /*FSM_Players p0(.clk(CLOCK_50),
     .resetn(KEY[0]),
@@ -171,8 +173,9 @@ module project
 	end
 	assign LEDG[0] = switch;
 	assign LEDR[9] = out;*/
-	reg enable;
-	wire [7:0] outDC ;
+	reg enable, parload;
+	wire [7:0] outDC;
+	wire [27:0] outRD2;
 	
 	RateDivider rd2(.enable(1'b1), //Will always be enabled, timer does not stop
 		    .reset_n(1'b1),//reset for both this and the output timer is SW17. if held on, will stop at 50 million
@@ -185,26 +188,29 @@ module project
     DisplayCounter dc(.enable(enable),//Counter that will count in seconds down from 15
 		    .reset_n(1'b1),//Same reset as rate divider, will reset to 15
 		    .clock(CLOCK_50),//50mhz clk
-		    .val(outDC)//output that will be fed to hexes
+		    .val(outDC),//output that will be fed to hexes
+			 .d(8'b11111111),
+			 .ParLoad(parload)
     );
 	
 	
 	
         
-	SevenSegDecoder my_display7(HEX4, outDC[3:0]);//Display least significant bit of timer on hex2
-	SevenSegDecoder my_display8(HEX5, outDC[7:4]);//Display highest significant bit of timer on hex3
+	SevenSegDecoder_Timer my_display7(HEX4, outDC[3:0]);//Display least significant bit of timer on hex2
+	SevenSegDecoder_Timer my_display8(HEX5, outDC[7:4]);//Display highest significant bit of timer on hex3
 	
 	reg leadEnable;
-	wire [1:0] outLead;
-	DisplayLead(.enable(leadEnable), //Enabler that will trigger when timer reaches 0
-				.score1(p1ScoreCounter), //Input player 1 current score
-				.score2(p2ScoreCounter), //Input player 2 current score
+	wire [3:0] outLead;
+	DisplayLead(.enable(1'b1), //Enabler that will trigger when timer reaches 0
+				.score1(p1ScoreCounter[3:0]), //Input player 1 current score
+				.score2(p2ScoreCounter[3:0]), //Input player 2 current score
 				.lead(outLead) //Output for the current leader that will be sent to hexes
 				);
 	//Always block that will check if the rate divider reaches 0, if so enable the timer to decrement one value.
 	//Always block that will enable the lead display to change only when the timer reaches 0
 	always @(*)
 	begin
+		leadEnable <= 1'b1;
 		 //Conditions for timer
 		 if (outRD2 == 28'b0000000000000000000000000000)
 		 	begin
@@ -218,14 +224,26 @@ module project
 		if (outDC == 8'b00000000)
 			begin
 				leadEnable <= 1'b1;
+				parload <= 1'b1;
 			end
 		else
 			begin
-				leadEnable <= 1'b0;
+				//leadEnable <= 1'b0;
+				parload <= 1'b0;
+			end
+		if (outDC == 8'b11111111)
+			begin
+				//leadEnable <= 1'b1;
+				parload <= 1'b1;
+			end
+		else
+			begin
+				//leadEnable <= 1'b0;
+				parload <= 1'b0;
 			end
 	end
 	
-	SevenSegDecoder my_display9(HEX6, outLead);//Display the lead on hex 6
+	SevenSegDecoder my_display9(HEX6, outLead[3:0]);//Display the lead on hex 6
 	
 	
 endmodule
@@ -927,8 +945,7 @@ module ScoreCounterP2(enable, reset_n, clock, q, player);
 	end
 endmodule
 
-
-module SevenSegDecoder(hex_out, inputs);
+module SevenSegDecoder_Timer(hex_out, inputs);
     output reg [6:0] hex_out;
     input [3:0] inputs;
     always @(inputs)
@@ -949,7 +966,35 @@ module SevenSegDecoder(hex_out, inputs);
         4'hD: hex_out = 7'b0100001;
         4'hE: hex_out = 7'b0000110;
         4'hF: hex_out = 7'b0001110;
-        default: hex_out = 7'b1111111;
+        default: hex_out = 7'b0001100;
+	//For digits above 10, display the least significant bit
+	//Set the default as the letter P for displaying players
+    endcase
+endmodule
+
+
+module SevenSegDecoder(hex_out, inputs);
+    output reg [6:0] hex_out;
+    input [3:0] inputs;
+    always @(inputs)
+        case (inputs)
+        4'h0: hex_out = 7'b1000000;
+        4'h1: hex_out = 7'b1111001;
+        4'h2: hex_out = 7'b0100100;
+        4'h3: hex_out = 7'b0110000;
+        4'h4: hex_out = 7'b0011001;
+        4'h5: hex_out = 7'b0010010;
+        4'h6: hex_out = 7'b0000010;
+        4'h7: hex_out = 7'b1111000;
+        4'h8: hex_out = 7'b0000000;
+        4'h9: hex_out = 7'b0011000;
+        4'hA: hex_out = 7'b0001100;//P
+        4'hB: hex_out = 7'b0000011;
+        4'hC: hex_out = 7'b1000110;
+        4'hD: hex_out = 7'b0100001;
+        4'hE: hex_out = 7'b0000110;
+        4'hF: hex_out = 7'b0001110;
+        default: hex_out = 7'b0001100;
 	//For digits above 10, display the least significant bit
 	//Set the default as the letter P for displaying players
     endcase
@@ -982,33 +1027,36 @@ module RateDivider(enable, reset_n, clock, q, d, ParLoad);
 endmodule
 
 
-module DisplayCounter(enable, reset_n, clock, val);
+module DisplayCounter(enable, reset_n, clock, val, d, ParLoad);
 	output reg [7:0] val; // declare q
-	input clock, enable, reset_n;
+	input clock, enable, reset_n, ParLoad;
+	input [7:0] d;
 	always @(posedge clock) // triggered every time clock rises
 		begin
 			if (reset_n == 1'b0) // when reset is high
 				val <= 8'b00111100; // q is set to 15
 			else if (enable == 1'b1) // when enabled
 				val <= val - 1'b1; // count down 1
+			else if (ParLoad == 1'b1) // Check if parallel load
+				val <= d;
 			else if (enable == 1'b0) // hold when not enabled
 				val <= val;
-			else if (val == 1'b0)//once it reaches 0, reset to 15
+			else if (val == 8'b00000000)//once it reaches 0, reset to 15
 				val <= 8'b00111100;
 		end
 endmodule
 
 module DisplayLead(enable, score1, score2, lead);
-	output reg [1:0] lead; //declare the lead
+	output reg [3:0] lead; //declare the lead
 	input enable;
 	input [3:0] score1, score2;
-	always @(posedge enable)
+	always @(enable)
 		begin
 			if (score1 > score2) //If player1 is in the lead
-				lead <= 2'b01;// Set the output to be 1
+				lead <= 4'b0001;// Set the output to be 1
 			else if (score2 > score1) //If player2 is in the lead
-				lead <= 2'b10; //Set the output to be 2
+				lead <= 4'b0010; //Set the output to be 2
 			else // If there is a tie
-				lead <= 2'b00; //Set the output to be 0
+				lead <= 4'b0000; //Set the output to be 0
 		end
 	endmodule
