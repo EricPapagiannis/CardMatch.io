@@ -244,10 +244,33 @@ module project
 	end
 	
 	SevenSegDecoder my_display9(HEX6, outLead[3:0]);//Display the lead on hex 6
+	wire won;
+	EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);
 	
 	
 endmodule
 
+module EndState(
+	input [7:0] timer,
+	input [3:0] score1,
+	input [3:0] score2,
+	output reg won
+);
+	reg [3:0] scoreT;
+	always@(*)
+	begin
+	scoreT <= score1 + score2;
+		if (timer == 8'b00000000 || scoreT == 1'd9)
+			begin
+				won <= 1'b1; 
+			end
+		else
+			begin
+				won <= 1'b0;
+			end
+	end	
+	
+endmodule
 
 module FSM(
     input clk,
