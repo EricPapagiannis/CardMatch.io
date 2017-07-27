@@ -244,13 +244,15 @@ module project
 		//Endgame flasher condition
 		if (won == 1'b1)
 			begin
-				flashEnable <= 1'b1;
-			end
-		else
-			begin
-				flashEnable <= 1'b0;
-			end
-				
+				if (outRD2 == 28'b0000000000000000000000000000)
+					begin
+						flashEnable <= 1'b1;
+					end
+				else
+					begin
+						flashEnable <= 1'b0;
+					end
+			end			
 	end
 	
 	
