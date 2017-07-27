@@ -121,20 +121,6 @@ module project
 	wire m;
 	SevenSegDecoder mydisplay9(HEX2, p1ScoreCounter[3:0]);//player 1 score hex output
 	SevenSegDecoder mydisplay10(HEX0, p2ScoreCounter[3:0]);//player 2 score hex output
-	SevenSegDecoder mydisplay11(HEX7, 4'hA);
- 
-    /*FSM_Players p0(.clk(CLOCK_50),
-    .resetn(KEY[0]),
-    .go(splayer),
-	.writeEn(writeEn),
-   .player(player)
-	);*/
-
-    /*FSM_Joystick j0(.clk(CLOCK_50),
-    .resetn(KEY[0]),
-    .go(SW[17:14]),
-   .can_move(can_move)
-	);*/
 
 	// NEED A DATAPATH FOR THE JOYSTICK COORDINATE - send coordinate into FSM_cards
 
@@ -206,6 +192,20 @@ module project
 				.score2(p2ScoreCounter[3:0]), //Input player 2 current score
 				.lead(outLead) //Output for the current leader that will be sent to hexes
 				);
+	wire won;
+	reg flashEnable;
+	wire [4:0] pFlashOut, leadFlashOut;
+	EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);		
+	Flasher flash(.p(4'hA),
+				  .lead(outLead[3:0]),
+				  .load(4'hB),
+				  .enable(flashEnable),
+				  .pFlash(pFlashOut),
+				  .leadFlash(leadFlashOut)
+				  );
+	SevenSegDecoder mydisplay11(HEX7, pFlashOut);
+	SevenSegDecoder my_display9(HEX6, leadFlashOut);//Display the lead on hex 6
+	
 	//Always block that will check if the rate divider reaches 0, if so enable the timer to decrement one value.
 	//Always block that will enable the lead display to change only when the timer reaches 0
 	always @(*)
@@ -241,11 +241,20 @@ module project
 				//leadEnable <= 1'b0;
 				parload <= 1'b0;
 			end
+		//Endgame flasher condition
+		if (won == 1'b1)
+			begin
+				flashEnable <= 1'b1;
+			end
+		else
+			begin
+				flashEnable <= 1'b0;
+			end
+				
 	end
 	
-	SevenSegDecoder my_display9(HEX6, outLead[3:0]);//Display the lead on hex 6
-	wire won;
-	EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);
+	
+	
 	
 	
 endmodule
@@ -270,6 +279,30 @@ module EndState(
 			end
 	end	
 	
+endmodule
+
+module Flasher(
+	input [3:0] p,
+	input [3:0] lead,
+	input [3:0] load,
+	input enable,
+	output reg [3:0] pFlash,
+	output reg [3:0] leadFlash
+	);
+	
+	always @(*)
+	begin
+		if (enable == 1'b1)
+			begin
+				pFlash <= load;
+				leadFlash <=load;
+			end
+		else
+			begin
+				pFlash <= p;
+				leadFlash <= lead;
+			end
+	end
 endmodule
 
 module FSM(
@@ -1011,8 +1044,8 @@ module SevenSegDecoder(hex_out, inputs);
         4'h7: hex_out = 7'b1111000;
         4'h8: hex_out = 7'b0000000;
         4'h9: hex_out = 7'b0011000;
-        4'hA: hex_out = 7'b0001100;//P
-        4'hB: hex_out = 7'b0000011;
+        4'hA: hex_out = 7'b0001100;//P value
+        4'hB: hex_out = 7'b1111111;//Flash value
         4'hC: hex_out = 7'b1000110;
         4'hD: hex_out = 7'b0100001;
         4'hE: hex_out = 7'b0000110;
