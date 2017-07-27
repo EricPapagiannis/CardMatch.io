@@ -175,7 +175,7 @@ module project
 		    .reset_n(1'b1),//Same reset as rate divider, will reset to 15
 		    .clock(CLOCK_50),//50mhz clk
 		    .val(outDC),//output that will be fed to hexes
-			 .d(8'b11111111),
+			 .d(8'b11111111),//TEMPORARY!!! SWITCH BACK IMMEDIATELY AFTER TESTING
 			 .ParLoad(parload)
     );
 	
@@ -192,10 +192,10 @@ module project
 				.score2(p2ScoreCounter[3:0]), //Input player 2 current score
 				.lead(outLead) //Output for the current leader that will be sent to hexes
 				);
-	wire won;
+	reg won;
 	reg flashEnable;
 	wire [4:0] pFlashOut, leadFlashOut;
-	EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);		
+	//EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);		
 	Flasher flash(.p(4'hA),
 				  .lead(outLead[3:0]),
 				  .load(4'hB),
@@ -208,6 +208,8 @@ module project
 	
 	//Always block that will check if the rate divider reaches 0, if so enable the timer to decrement one value.
 	//Always block that will enable the lead display to change only when the timer reaches 0
+	reg haswon;
+	initial haswon = 1'b0;
 	always @(*)
 	begin
 		leadEnable <= 1'b1;
@@ -215,6 +217,7 @@ module project
 		 if (outRD2 == 28'b0000000000000000000000000000)
 		 	begin
 				enable <= 1'b1;
+				flashEnable <= ~flashEnable ;
 		 	end
 		else
 			begin
@@ -241,18 +244,21 @@ module project
 				//leadEnable <= 1'b0;
 				parload <= 1'b0;
 			end
+		/*
+		//Endgame conditions
+		if (outDC == 8'b00000001)
+			begin
+				won <= 1'b1;
+			end
 		//Endgame flasher condition
 		if (won == 1'b1)
 			begin
+				won <= 1'b1;
 				if (outRD2 == 28'b0000000000000000000000000000)
 					begin
-						flashEnable <= 1'b1;
+						flashEnable <= ~flashEnable ;
 					end
-				else
-					begin
-						flashEnable <= 1'b0;
-					end
-			end			
+			end	*/		
 	end
 	
 	
@@ -270,13 +276,15 @@ module EndState(
 	reg [3:0] scoreT;
 	always@(*)
 	begin
+
 	scoreT <= score1 + score2;
-		if (timer == 8'b00000000 || scoreT == 1'd9)
+		//if (timer == 8'b00000000 || scoreT == 4'b1001)
+		if (timer == 8'b00000001)
 			begin
 				won <= 1'b1; 
 			end
 		else
-			begin
+			begin 
 				won <= 1'b0;
 			end
 	end	
