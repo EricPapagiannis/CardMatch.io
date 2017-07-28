@@ -104,10 +104,9 @@ module project
 	.isMatch(m)
 	);
 	assign LEDG[1:0] = splayer;
-    // Instansiate FSM control
      FSM c0(.clk(CLOCK_50),
     .resetn(KEY[0]),
-    .go(~KEY[1]), // try with low
+    .go(~KEY[1]),
 	 .matching(1'b1),
 	.match_the_cards(writeEn),
    .card1(card1), 
@@ -122,43 +121,9 @@ module project
 	SevenSegDecoder mydisplay9(HEX2, p1ScoreCounter[3:0]);//player 1 score hex output
 	SevenSegDecoder mydisplay10(HEX0, p2ScoreCounter[3:0]);//player 2 score hex output
 
-	// NEED A DATAPATH FOR THE JOYSTICK COORDINATE - send coordinate into FSM_cards
-
-
    wire can_move;
    reg out;
-   //initial switch = 1'b1;
-	
-	/*always@(*)
-	begin
-		if (KEY[0])
-		begin 
-		switch <= 1'b0;
-		end
-	end*/
-	
-	/*always@(*)
-	begin
-		if (writeEn)
-		begin
-			if (tc1 == tc2)
-				begin
-					out <= 1'b1; 
-					//switch <= switch;
-				end
-			else
-				begin
-					if (out == 1'b0)
-					begin
-						switch <= ~switch;
-					end
-					out <= 1'b0;
-					
-				end
-		end
-	end
-	assign LEDG[0] = switch;
-	assign LEDR[9] = out;*/
+
 	reg enable, parload;
 	wire [7:0] outDC;
 	wire [27:0] outRD2;
@@ -172,10 +137,10 @@ module project
     );
 	
     DisplayCounter dc(.enable(enable),//Counter that will count in seconds down from 15
-		    .reset_n(1'b1),//Same reset as rate divider, will reset to 15
+		    .reset_n(KEY[0]),//Same reset as rate divider, will reset to 15
 		    .clock(CLOCK_50),//50mhz clk
 		    .val(outDC),//output that will be fed to hexes
-			 .d(8'b11111111),//TEMPORARY!!! SWITCH BACK IMMEDIATELY AFTER TESTING
+			 .d(8'b11111111),// Represents FF in HEX
 			 .ParLoad(parload)
     );
 	
@@ -244,21 +209,6 @@ module project
 				//leadEnable <= 1'b0;
 				parload <= 1'b0;
 			end
-		/*
-		//Endgame conditions
-		if (outDC == 8'b00000001)
-			begin
-				won <= 1'b1;
-			end
-		//Endgame flasher condition
-		if (won == 1'b1)
-			begin
-				won <= 1'b1;
-				if (outRD2 == 28'b0000000000000000000000000000)
-					begin
-						flashEnable <= ~flashEnable ;
-					end
-			end	*/		
 	end
 	
 	
@@ -278,7 +228,6 @@ module EndState(
 	begin
 
 	scoreT <= score1 + score2;
-		//if (timer == 8'b00000000 || scoreT == 4'b1001)
 		if (timer == 8'b00000001)
 			begin
 				won <= 1'b1; 
@@ -339,12 +288,6 @@ module FSM(
     always@(*)
     begin: state_table
             case (current_state)
-
-		//State for Init
-		//State for choose card 1card1
-		//State for choose card 2
-		//State for match   reg out;
-		//State for no m1'b0atch
 					 
                 choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Loop in current state until value is input
 				
@@ -441,17 +384,6 @@ module datapath(
 			if (match_the_card)
 			begin
 				otp <= 6'b111111;
-				/*
-				((cc1 == 18'b100000000000000000)&& (cc2 == 18'b000000001000000000)|| 
-					 (cc1 == 18'b010000000000000000)&& (cc2 == 18'b000000000000000001)|| 
-					 (cc1 == 18'b001000000000000000)&& (cc2 == 18'b000000000000010000)|| 
-					 (cc1 == 18'b000100000000000000)&& (cc2 == 18'b000000000000001000)|| 
-					 (cc1 == 18'b000010000000000000)&& (cc2 == 18'b000000000000000100)|| 
-					 (cc1 == 18'b000001000000000000)&& (cc2 == 18'b000000100000000000)|| 
-					 (cc1 == 18'b000000001000000000)&& (cc2 == 18'b000000000010000000)|| 
-					 (cc1 == 18'b000000000100000000)&& (cc2 == 18'b000000000000100000)|| 
-					 (cc1 == 18'b100000000010000000)&& (cc2 == 18'b000000000000000010))
-				*/
 				if ((cc1[17] == 1'b1) && (cc2[10] == 1'b1)||
 					 (cc2[17] == 1'b1) && (cc1[10] == 1'b1)||
 					 (cc1[16] == 1'b1) && (cc2[0] == 1'b1)||
@@ -473,19 +405,8 @@ module datapath(
 				begin
 					mat <= 1'b1;
 					is_correct <= ply;
-					//otp <= 6'b101001;
 					c1 <= 18'b111111111111111110;
-					c2 <= 18'b111111111111111110;
-				
-						/*if (ply[0] == 1'b0)
-						begin
-							p1score <= p1score + 4'b0001;
-						end
-						else
-						begin
-							p2score <= p2score + 4'b0001;
-						end*/
-					
+					c2 <= 18'b111111111111111110;					
 				end
 				else if (cc1 == 18'b111111111111111110&& cc2 == 18'b111111111111111110)
 				begin
@@ -498,8 +419,6 @@ module datapath(
 					otp <= 6'b100001;
 					mat <= 1'b0;
 					is_correct <= ~ply;
-					//c1 <= 18'b010000000000000000;
-					//c2 <= 18'b000000000000000001;
 					c1 <= 18'b000000000000000000;
 					c2 <= 18'b000000000000000000;
 
@@ -510,9 +429,7 @@ module datapath(
 			begin
 				otp <= 6'b000001;
 				c1 <= TEMP_match;
-				 
-				//INSERT IF STATEMENTS HERE
-				
+				 			
 			end
 			else if (card2)
 			begin
@@ -522,7 +439,6 @@ module datapath(
 			
 		end
 	end
-	//assign LEDS[16:11] = TEMP_match; // used to see what cards we're fliped
 	assign LEDS[5:0] = otp;
 	assign LEDS[9] = mat;
 	assign card_chosen_1 = c1;
@@ -1067,11 +983,6 @@ module SevenSegDecoder(hex_out, inputs);
 endmodule
 
 
-/*
-Since the output will be in decimal and not in hex, this module will represent the highest significant bit of a 2 bit number number.
-For example, when fed (12) it will output (1), when fed (8) it will output (0)
-*/
-
 module RateDivider(enable, reset_n, clock, q, d, ParLoad);
 	output reg [27:0] q; // declare q
 	input [27:0] d; // declare d
@@ -1100,7 +1011,7 @@ module DisplayCounter(enable, reset_n, clock, val, d, ParLoad);
 	always @(posedge clock) // triggered every time clock rises
 		begin
 			if (reset_n == 1'b0) // when reset is high
-				val <= 8'b00111100; // q is set to 15
+				val <= 8'b11111111; // q is set to 15
 			else if (enable == 1'b1) // when enabled
 				val <= val - 1'b1; // count down 1
 			else if (ParLoad == 1'b1) // Check if parallel load
@@ -1108,7 +1019,7 @@ module DisplayCounter(enable, reset_n, clock, val, d, ParLoad);
 			else if (enable == 1'b0) // hold when not enabled
 				val <= val;
 			else if (val == 8'b00000000)//once it reaches 0, reset to 15
-				val <= 8'b00111100;
+				val <= 8'b11111111;
 		end
 endmodule
 
@@ -1126,3 +1037,4 @@ module DisplayLead(enable, score1, score2, lead);
 				lead <= 4'b0000; //Set the output to be 0
 		end
 	endmodule
+	
