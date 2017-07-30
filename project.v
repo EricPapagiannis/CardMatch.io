@@ -49,7 +49,7 @@ module project
 	wire [7:0] x;
 	wire [6:0] y;
 	wire writeEn_vga;
-	wire writeEn;
+	wire writeEn; // Used to determine if in the matching state or not
 	
 	vga_in my_vga_in(.switches(SW[17:0]), .keys(KEY[3:0]), .clk(CLOCK_50), .x(x), .y(y), .colour(colour), .writeEn(writeEn_vga));
 
@@ -78,51 +78,43 @@ module project
 		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
 		defparam VGA.BACKGROUND_IMAGE = "image.colour.mif";
 	
-			
-	// Put your code here. Your code should produce signals x,y,colour and writeEn/plot
-	// for the VGA controller, in addition to any other functionality your design may require.
-	wire card1, card2;
-    wire [17:0] tc1;
-	wire [17:0] tc2;
-	 wire [1:0] player;
-	 wire [1:0] splayer;
+	wire card1, card2; // wire representing which to read (NOT WHICH CARDS HAVE BEEN CHOSEN)
+    wire [17:0] tc1; // Represents the first card chosen
+	wire [17:0] tc2; // Represents the second card chosen
+	wire [1:0] splayer; // Represents which players turn it is
     // Instansiate datapath
-	  datapath d0(.clk(CLOCK_50),
+	 datapath d0(.clk(CLOCK_50),
     .resetn(KEY[0]),
-    .TEMP_match(SW[17:0]),
+    .cardVal(SW[17:0]), // The 18 switches each repre one of the 18 cards
     .card1(card1), 
 	.card2(card2),
 	.cc1(tc1),
 	.cc2(tc2),
 	.Key(KEY[1]),
 	.ply(splayer),
-	.match_the_card(writeEn),
+	.match_the_card(writeEn), // An indicator to trigger the matching state to see if 2 cards are the same
 	.card_chosen_1(tc1),
 	.card_chosen_2(tc2),
-	.LEDS(LEDR[9:0]),
+	.LEDS(LEDR[9:0]), // LEDS used to represent which state the FSM is currently in
 	.is_correct(splayer),
-	.isMatch(m)
+	.isMatch(m) //Represents whether the 2 cards were a match
 	);
-	assign LEDG[1:0] = splayer;
+	
      FSM c0(.clk(CLOCK_50),
     .resetn(KEY[0]),
     .go(~KEY[1]),
-	 .matching(1'b1),
 	.match_the_cards(writeEn),
    .card1(card1), 
 	.card2(card2)
 );
-
-	ScoreCounterP1 q (m, KEY[0], KEY[1], p1ScoreCounter, splayer);
-	ScoreCounterP2 q2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer);
+	assign LEDG[1:0] = splayer; // Assigns the green LEDS to indicate which player it is (LED0 and LED1 off means P1; both on means P2)
+	ScoreCounterP1 SCP1 (m, KEY[0], KEY[1], p1ScoreCounter, splayer); // A Counter to keep track of the scores for Player 1
+	ScoreCounterP2 SCP2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer); // A counter to keep track of the scores for Player 2
 	wire [3:0] p1ScoreCounter;//the wire that connects the score counter the hexes for player 1
 	wire [3:0] p2ScoreCounter;//the wire that connects the score counter the hexes for player 2
 	wire m;
 	SevenSegDecoder mydisplay9(HEX2, p1ScoreCounter[3:0]);//player 1 score hex output
 	SevenSegDecoder mydisplay10(HEX0, p2ScoreCounter[3:0]);//player 2 score hex output
-
-   wire can_move;
-   reg out;
 
 	reg enable, parload;
 	wire [7:0] outDC;
@@ -268,10 +260,7 @@ module FSM(
     input clk,
     input resetn,
     input go,
-    input matching, // Used to determine if the fsm is in the matching state; if so dont do anything until it is finished
-    //output reg writeEn,
     output reg match_the_cards,
-    //output reg  ld_x, ld_y
     output reg  card1, card2
     );
 
@@ -280,26 +269,26 @@ module FSM(
     localparam  choose_card1        = 4'd0,
                 choose_card1_wait   = 4'd1,
                 choose_card2        = 4'd2,
-					 choose_card2_wait   = 4'd3,
-                check_match 	    	= 4'd4,
-					 check_match_wait    = 4'd5;
+				choose_card2_wait   = 4'd3,
+                check_match 	    = 4'd4,
+				check_match_wait    = 4'd5;
     
     // Next state logic aka our state table
     always@(*)
     begin: state_table
             case (current_state)
 					 
-                choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Loop in current state until value is input
+                choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Choose card 1 state
 				
-                choose_card1_wait: next_state = go ? choose_card1_wait : choose_card2; // Loop in current state until go signal goes low
+                choose_card1_wait: next_state = go ? choose_card1_wait : choose_card2; // Choose card 1 wait state; Goes to choose card 2
 				
-                choose_card2: next_state = go ? choose_card2_wait : choose_card2; // Loop in current state until value is input
+                choose_card2: next_state = go ? choose_card2_wait : choose_card2; // Choose card 2 state
 				
-                choose_card2_wait: next_state = go ? choose_card2_wait : check_match; // Loop in current state until go signal goes low
+                choose_card2_wait: next_state = go ? choose_card2_wait : check_match; // Choose card 1 wait state; Goes to check match state
 				
-                check_match: next_state = go ? check_match_wait : check_match; // Loop in current state until value is input
+                check_match: next_state = go ? check_match_wait : check_match; // Check matching state
 					 
-					 check_match_wait: next_state = go ? check_match_wait : choose_card1; // Loop in current state until value is input
+					 check_match_wait: next_state = go ? check_match_wait : choose_card1; // Check matching wait state; goes to choose card 1 state
 				
                 default:     next_state = choose_card1;
         endcase
@@ -331,7 +320,7 @@ module FSM(
                 match_the_cards = 1'b1;
                 end
 			check_match_wait : begin
-				match_the_cards = 1'b1;//e
+				match_the_cards = 1'b1;
 				end
         // default:  n  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
@@ -351,7 +340,7 @@ endmodule
 module datapath(
     input clk,
     input resetn,
-    input [17:0] TEMP_match,
+    input [17:0] cardVal,
     input card1, card2, 
 	 input [17:0] cc1, 
 	 input [17:0] cc2,
@@ -364,26 +353,22 @@ module datapath(
 	output reg [1:0] is_correct,
 	output isMatch
     );
-    reg [5:0] otp = 6'b000000;
-	 reg [17:0] c1;
-	 reg [17:0] c2;
-	 reg mat;
-	 reg s1;
-	 reg s2;
-	 reg [3:0] p1score = 4'b0000;
-	 reg [3:0] p2score = 4'b0000;
+     reg [5:0] otp = 6'b000000;
+	 reg [17:0] c1; // Register for the first card chosen
+	 reg [17:0] c2; // Register for the second card chosen
+	 reg mat; // Whether or not a matching set was attained
 	 always@(posedge clk)
 	 begin
 		if (!resetn)
 		begin
-			otp <= 6'b000000;
+			otp <= 6'b000000; // Inistal state of LEDS
 		end
 		else
 		begin
 			mat <= 1'b0;
 			if (match_the_card)
 			begin
-				otp <= 6'b111111;
+				otp <= 6'b111111; // Indicates that the player is in the matching state
 				if ((cc1[17] == 1'b1) && (cc2[10] == 1'b1)||
 					 (cc2[17] == 1'b1) && (cc1[10] == 1'b1)||
 					 (cc1[16] == 1'b1) && (cc2[0] == 1'b1)||
@@ -401,16 +386,16 @@ module datapath(
 					 (cc1[8] == 1'b1) && (cc2[5] == 1'b1)|| 
 					 (cc2[8] == 1'b1) && (cc1[5] == 1'b1)|| 
 					 (cc1[6] == 1'b1) && (cc2[1] == 1'b1)||
-					 (cc2[6] == 1'b1) && (cc1[1] == 1'b1))
+					 (cc2[6] == 1'b1) && (cc1[1] == 1'b1)) // Card combinations
 				begin
 					mat <= 1'b1;
 					is_correct <= ply;
-					c1 <= 18'b111111111111111110;
+					c1 <= 18'b111111111111111110; // Set both cards to dummy values so the datapath does not loop in this sate while matching state it active (LEDS would constantly if this werent here)
 					c2 <= 18'b111111111111111110;					
 				end
 				else if (cc1 == 18'b111111111111111110&& cc2 == 18'b111111111111111110)
 				begin
-					otp <= 6'b101001;
+					otp <= 6'b101001; // Dummy state on match so that the score does not constatnly increment and LEDS for players dont flicker
 					mat <= 1'b1;
 					
 				end
@@ -419,22 +404,22 @@ module datapath(
 					otp <= 6'b100001;
 					mat <= 1'b0;
 					is_correct <= ~ply;
-					c1 <= 18'b000000000000000000;
+					c1 <= 18'b000000000000000000; // Set both cards to dummy values so the datapath does not loop in this sate while matching state it active (LEDS would constantly if this werent here)
 					c2 <= 18'b000000000000000000;
 
 				end
 
 			end
-			else if (card1)
+			else if (card1) // Load the first card
 			begin
 				otp <= 6'b000001;
-				c1 <= TEMP_match;
+				c1 <= cardVal;
 				 			
 			end
-			else if (card2)
+			else if (card2) // Load the second card
 			begin
 				otp <= 6'b10000;
-				c2 <= TEMP_match;
+				c2 <= cardVal;
 			end
 			
 		end
