@@ -234,7 +234,7 @@ module Flasher(
 	begin
 	if (enable == 1'b1)
 	begin
-	    pFlash <= load;
+	   	pFlash <= load;
 		leadFlash <=load;
 	end
 	else
@@ -246,107 +246,107 @@ module Flasher(
 endmodule
 
 module FSM(
-    input clk,
-    input resetn,
-    input go,
-    output reg match_the_cards,
-    output reg  card1, card2
-    );
+	input clk,
+	input resetn,
+	input go,
+	output reg match_the_cards,
+	output reg  card1, card2
+	);
 
-    reg [6:0] current_state, next_state; 
-    
-    localparam  choose_card1        = 4'd0,
-                choose_card1_wait   = 4'd1,
-                choose_card2        = 4'd2,
+	reg [6:0] current_state, next_state; 
+
+	localparam  choose_card1        = 4'd0,
+		choose_card1_wait   = 4'd1,
+		choose_card2        = 4'd2,
 		choose_card2_wait   = 4'd3,
-                check_match 	    = 4'd4,
+		check_match 	    = 4'd4,
 		check_match_wait    = 4'd5;
-    
-    // Next state logic aka our state table
-    always@(*)
-    begin: state_table
+
+	// Next state logic aka our state table
+	always@(*)
+	begin: state_table
 	case (current_state)		 
 		choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Choose card 1 state
-				
-                choose_card1_wait: next_state = go ? choose_card1_wait : choose_card2; // Choose card 1 wait state; Goes to choose card 2
-				
-                choose_card2: next_state = go ? choose_card2_wait : choose_card2; // Choose card 2 state
-				
-                choose_card2_wait: next_state = go ? choose_card2_wait : check_match; // Choose card 1 wait state; Goes to check match state
-				
-                check_match: next_state = go ? check_match_wait : check_match; // Check matching state
-					 
+
+		choose_card1_wait: next_state = go ? choose_card1_wait : choose_card2; // Choose card 1 wait state; Goes to choose card 2
+
+		choose_card2: next_state = go ? choose_card2_wait : choose_card2; // Choose card 2 state
+
+		choose_card2_wait: next_state = go ? choose_card2_wait : check_match; // Choose card 1 wait state; Goes to check match state
+
+		check_match: next_state = go ? check_match_wait : check_match; // Check matching state
+
 		check_match_wait: next_state = go ? check_match_wait : choose_card1; // Check matching wait state; goes to choose card 1 state
-				
-                default:     next_state = choose_card1;
-        endcase
-    end // state_table
-   
 
-    // Output logic aka all of our datapath control signals
-    always @(*)
-    begin: enable_signals
-        // By default make all our signals 0
-        card1 = 1'b0;
-        card2 = 1'b0;
-        match_the_cards = 1'b0;
+		default:     next_state = choose_card1;
+	endcase
+	end // state_table
 
-        case (current_state)
-            choose_card1: begin
-                card1 = 1'b1;
-                end
-	    choose_card1_wait: begin
-                card1 = 1'b1; // Draw the card in this state
-                end
-            choose_card2: begin
-                card2 = 1'b1;
-                end
-	    choose_card2_wait: begin
-                card2 = 1'b1; // Draw the card in this state
-                end
-            check_match: begin
-                match_the_cards = 1'b1;
-                end
-	    check_match_wait : begin
-	        match_the_cards = 1'b1;
+
+	// Output logic aka all of our datapath control signals
+	always @(*)
+	begin: enable_signals
+	// By default make all our signals 0
+	card1 = 1'b0;
+	card2 = 1'b0;
+	match_the_cards = 1'b0;
+
+	case (current_state)
+		choose_card1: begin
+			card1 = 1'b1;
 		end
-        // default:  n  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
-        endcase
-    end // enable_signals
-   
-    // current_state registers
-    always@(posedge clk)
-    begin: state_FFs
-        if(!resetn)
-            current_state <= choose_card1;
-        else
-            current_state <= next_state;
-    end // state_FFS
+		choose_card1_wait: begin
+			card1 = 1'b1; // Draw the card in this state
+		end
+		choose_card2: begin
+			card2 = 1'b1;
+		end
+		choose_card2_wait: begin
+			card2 = 1'b1; // Draw the card in this state
+		end
+			check_match: begin
+			match_the_cards = 1'b1;
+		end
+			check_match_wait : begin
+			match_the_cards = 1'b1;
+		end
+	// default:  n  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+	endcase
+	end // enable_signals
+
+	// current_state registers
+	always@(posedge clk)
+	begin: state_FFs
+	if(!resetn)
+		current_state <= choose_card1;
+	else
+		current_state <= next_state;
+	end // state_FFS
 endmodule
 
 
 module datapath(
-    input clk,
-    input resetn,
-    input [17:0] cardVal,
-    input card1, card2, 
-	 input [17:0] cc1, 
-	 input [17:0] cc2,
-	 input [1:0] ply,
-	 input Key,
-	 input match_the_card,
-	 output [9:0] LEDS,
+	input clk,
+	input resetn,
+	input [17:0] cardVal,
+	input card1, card2, 
+	input [17:0] cc1, 
+	input [17:0] cc2,
+	input [1:0] ply,
+	input Key,
+	input match_the_card,
+	output [9:0] LEDS,
 	output [17:0] card_chosen_1,
 	output [17:0] card_chosen_2,
 	output reg [1:0] is_correct,
 	output isMatch
-    );
-     reg [5:0] otp = 6'b000000;
-	 reg [17:0] c1; // Register for the first card chosen
-	 reg [17:0] c2; // Register for the second card chosen
-	 reg mat; // Whether or not a matching set was attained
-	 always@(posedge clk)
-	 begin
+	);
+	reg [5:0] otp = 6'b000000;
+	reg [17:0] c1; // Register for the first card chosen
+	reg [17:0] c2; // Register for the second card chosen
+	reg mat; // Whether or not a matching set was attained
+	always@(posedge clk)
+	begin
 		if (!resetn)
 		begin
 			otp <= 6'b000000; // Inistal state of LEDS
@@ -394,15 +394,12 @@ module datapath(
 					is_correct <= ~ply;
 					c1 <= 18'b000000000000000000; // Set both cards to dummy values so the datapath does not loop in this sate while matching state it active (LEDS would constantly if this werent here)
 					c2 <= 18'b000000000000000000;
-
 				end
-
 			end
 			else if (card1) // Load the first card
 			begin
 				otp <= 6'b000001;
-				c1 <= cardVal;
-				 			
+				c1 <= cardVal;			
 			end
 			else if (card2) // Load the second card
 			begin
