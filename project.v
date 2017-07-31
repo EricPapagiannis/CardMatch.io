@@ -133,9 +133,6 @@ module project
 	.ParLoad(parload)
         );
 	
-	
-	
-        
 	SevenSegDecoder_Timer my_display7(HEX4, outDC[3:0]);//Display least significant bit of timer on hex2
 	SevenSegDecoder_Timer my_display8(HEX5, outDC[7:4]);//Display highest significant bit of timer on hex3
 	
@@ -150,7 +147,7 @@ module project
 	reg won;
 	reg flashEnable;
 	wire [4:0] pFlashOut, leadFlashOut;
-	//EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);		
+	//EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);
 	Flasher flash(.p(4'hA),
 	.lead(outLead[3:0]),
 	.load(4'hB),
