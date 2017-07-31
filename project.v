@@ -456,48 +456,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 		always@(posedge clk)
 		begin
 			
-			cardDrawn = 1'b0;
-			colour_in = colour_in1;
-			// Draw a 18x28 rectangular card, but halfway through the x, change colour_in from
-			// colour_in1 to colour_in2. This design choice was to implement having > 8 pairs of cards
-			// because the VGA adapter only has 8 colours, so we split the cards in two colours to enable
-			// Having more pairs.
-			if (y_pos_count < 6'b011100)
-			begin
-				x_pos_count = x_pos_count + 6'b000001;
-				
-				if (x_pos_count >= 6'b010010)
-				begin
-					x_pos_count = 6'b000000;
-					y_pos_count = y_pos_count + 6'b000001;
-					
-					if (y_pos_count == 6'b011100)
-					begin
-						drawScreen = 6'b000000;
-					end
-				
-				end
-					
-				if (x_pos_count >= 6'b001001)
-				begin
-				cardDrawn = 1'b1;
-					 colour_in = colour_in2;
-				end
-				
-			end
-			else
-			begin
-				
-				drawScreen = 6'b000000;
-			end
-			// Draw the card
-			if (~keys[1])
-			begin
-				drawScreen = 6'b000001;
-				x_pos_count = 6'b000000;
-				y_pos_count = 6'b000000;
-
-			end
+			
 			
 			
 			// Cards to be drawn. Each with unique (xin, yin) coordinates.
@@ -871,6 +830,49 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in1 = 3'b011;
 					colour_in2 = 3'b100;
 				end
+			end
+			
+			cardDrawn = 1'b0;
+			colour_in = colour_in1;
+			// Draw a 18x28 rectangular card, but halfway through the x, change colour_in from
+			// colour_in1 to colour_in2. This design choice was to implement having > 8 pairs of cards
+			// because the VGA adapter only has 8 colours, so we split the cards in two colours to enable
+			// Having more pairs.
+			if (y_pos_count < 6'b011100)
+			begin
+				x_pos_count = x_pos_count + 6'b000001;
+				
+				if (x_pos_count >= 6'b010010)
+				begin
+					x_pos_count = 6'b000000;
+					y_pos_count = y_pos_count + 6'b000001;
+					
+					if (y_pos_count == 6'b011100)
+					begin
+						drawScreen = 6'b000000;
+					end
+				
+				end
+					
+				if (x_pos_count >= 6'b001001)
+				begin
+				cardDrawn = 1'b1;
+					 colour_in = colour_in2;
+				end
+				
+			end
+			else
+			begin
+				
+				drawScreen = 6'b000000;
+			end
+			// Draw the card
+			if (~keys[1])
+			begin
+				drawScreen = 6'b000001;
+				x_pos_count = 6'b000000;
+				y_pos_count = 6'b000000;
+
 			end
 			
 		end // state_table
