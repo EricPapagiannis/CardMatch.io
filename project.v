@@ -3,9 +3,8 @@
 module project
 	(
 		CLOCK_50,						//	On Board 50 MHz
-		// Your inputs and outputs here
-        KEY,
-        SW,
+        	KEY,
+		SW,
 		// The ports below are for the VGA output.  Do not change.
 		VGA_CLK,   						//	VGA Clock
 		VGA_HS,							//	VGA H_SYNC
@@ -24,21 +23,19 @@ module project
 		HEX6,
 		HEX7
 	);
-
-	input			CLOCK_50;				//	50 MHz
-	input   [17:0]   SW;
-	input   [3:0]   KEY;
+	input CLOCK_50;	// 50 MHz
+	input [17:0] SW;
+	input [3:0] KEY;
 	output [6:0] HEX0, HEX2, HEX4, HEX5, HEX6, HEX7;
-	// Declare your inputs and outputs here
 	// Do not change the following outputs
-	output			VGA_CLK;   				//	VGA Clock
-	output			VGA_HS;					//	VGA H_SYNC
-	output			VGA_VS;					//	VGA V_SYNC
-	output			VGA_BLANK_N;				//	VGA BLANK
-	output			VGA_SYNC_N;				//	VGA SYNC
-	output	[9:0]	VGA_R;   				//	VGA Red[9:0]
-	output	[9:0]	VGA_G;	 				//	VGA Green[9:0]
-	output	[9:0]	VGA_B;   				//	VGA Blue[9:0]
+	output VGA_CLK;   	// VGA Clock
+	output VGA_HS;		// VGA H_SYNC
+	output VGA_VS;		// VGA V_SYNC
+	output VGA_BLANK_N;	// VGA BLANK
+	output VGA_SYNC_N;	// VGA SYNC
+	output [9:0] VGA_R;   	// VGA Red[9:0]
+	output [9:0] VGA_G;	// VGA Green[9:0]
+	output [9:0] VGA_B;   	// VGA Blue[9:0]
 	output [17:0] LEDR;
 	output [7:0] LEDG;
 	wire resetn;
@@ -57,36 +54,35 @@ module project
 	// Define the number of colours as well as the initial background
 	// image file (.MIF) for the controller.
 	
-	vga_adapter VGA(
-			.resetn(resetn),
-			.clock(CLOCK_50),
-			.colour(colour),
-			.x(x),
-			.y(y),
-			.plot(writeEn_vga),
-			/* Signals for the DAC to drive the monitor. */
-			.VGA_R(VGA_R),
-			.VGA_G(VGA_G),
-			.VGA_B(VGA_B),
-			.VGA_HS(VGA_HS),
-			.VGA_VS(VGA_VS),
-			.VGA_BLANK(VGA_BLANK_N),
-			.VGA_SYNC(VGA_SYNC_N),
-			.VGA_CLK(VGA_CLK));
-		defparam VGA.RESOLUTION = "160x120";
-		defparam VGA.MONOCHROME = "FALSE";
-		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
-		defparam VGA.BACKGROUND_IMAGE = "image.colour.mif";
+	vga_adapter VGA(.resetn(resetn),
+	.clock(CLOCK_50),
+	.colour(colour),
+	.x(x),
+	.y(y),
+	.plot(writeEn_vga),
+	/* Signals for the DAC to drive the monitor. */
+	.VGA_R(VGA_R),
+	.VGA_G(VGA_G),
+	.VGA_B(VGA_B),
+	.VGA_HS(VGA_HS),
+	.VGA_VS(VGA_VS),
+	.VGA_BLANK(VGA_BLANK_N),
+	.VGA_SYNC(VGA_SYNC_N),
+	.VGA_CLK(VGA_CLK));
+	defparam VGA.RESOLUTION = "160x120";
+	defparam VGA.MONOCHROME = "FALSE";
+	defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
+	defparam VGA.BACKGROUND_IMAGE = "image.colour.mif";
 	
 	wire card1, card2; // wire representing which to read (NOT WHICH CARDS HAVE BEEN CHOSEN)
-    wire [17:0] tc1; // Represents the first card chosen
+    	wire [17:0] tc1; // Represents the first card chosen
 	wire [17:0] tc2; // Represents the second card chosen
 	wire [1:0] splayer; // Represents which players turn it is
-    // Instansiate datapath
-	 datapath d0(.clk(CLOCK_50),
-    .resetn(KEY[0]),
-    .cardVal(SW[17:0]), // The 18 switches each repre one of the 18 cards
-    .card1(card1), 
+    	// Instansiate datapath
+	datapath d0(.clk(CLOCK_50),
+	.resetn(KEY[0]),
+	.cardVal(SW[17:0]), // The 18 switches each repre one of the 18 cards
+	.card1(card1), 
 	.card2(card2),
 	.cc1(tc1),
 	.cc2(tc2),
@@ -100,13 +96,14 @@ module project
 	.isMatch(m) //Represents whether the 2 cards were a match
 	);
 	
-     FSM c0(.clk(CLOCK_50),
-    .resetn(KEY[0]),
-    .go(~KEY[1]),
+     	FSM c0(.clk(CLOCK_50),
+	.resetn(KEY[0]),
+	.go(~KEY[1]),
 	.match_the_cards(writeEn),
-   .card1(card1), 
+	.card1(card1), 
 	.card2(card2)
-);
+	);
+	
 	assign LEDG[1:0] = splayer; // Assigns the green LEDS to indicate which player it is (LED0 and LED1 off means P1; both on means P2)
 	ScoreCounterP1 SCP1 (m, KEY[0], KEY[1], p1ScoreCounter, splayer); // A Counter to keep track of the scores for Player 1
 	ScoreCounterP2 SCP2 (m, KEY[0], KEY[1], p2ScoreCounter, splayer); // A counter to keep track of the scores for Player 2
@@ -121,20 +118,20 @@ module project
 	wire [27:0] outRD2;
 	
 	RateDivider rd2(.enable(1'b1), //Will always be enabled, timer does not stop
-		    .reset_n(1'b1),//reset for both this and the output timer is SW17. if held on, will stop at 50 million
-		    .clock(CLOCK_50),//50mhz clk
-		    .q(outRD2),//output that will determine if the timer can go down 1 second
-		    .d(28'b0010111110101111000001111111), //50 million - 1
-		    .ParLoad(1'b0)//when flipped, will immediately reset to 50 million since that is the d value constant
-    );
+	.reset_n(1'b1),//reset for both this and the output timer is SW17. if held on, will stop at 50 million
+	.clock(CLOCK_50),//50mhz clk
+	.q(outRD2),//output that will determine if the timer can go down 1 second
+	.d(28'b0010111110101111000001111111), //50 million - 1
+	.ParLoad(1'b0)//when flipped, will immediately reset to 50 million since that is the d value constant
+	);
 	
-    DisplayCounter dc(.enable(enable),//Counter that will count in seconds down from 15
-		    .reset_n(KEY[0]),//Same reset as rate divider, will reset to 15
-		    .clock(CLOCK_50),//50mhz clk
-		    .val(outDC),//output that will be fed to hexes
-			 .d(8'b11111111),// Represents FF in HEX
-			 .ParLoad(parload)
-    );
+        DisplayCounter dc(.enable(enable),//Counter that will count in seconds down from 15
+	.reset_n(KEY[0]),//Same reset as rate divider, will reset to 15
+	.clock(CLOCK_50),//50mhz clk
+	.val(outDC),//output that will be fed to hexes
+	.d(8'b11111111),// Represents FF in HEX
+	.ParLoad(parload)
+        );
 	
 	
 	
@@ -145,21 +142,22 @@ module project
 	reg leadEnable;
 	wire [3:0] outLead;
 	DisplayLead(.enable(1'b1), //Enabler that will trigger when timer reaches 0
-				.score1(p1ScoreCounter[3:0]), //Input player 1 current score
-				.score2(p2ScoreCounter[3:0]), //Input player 2 current score
-				.lead(outLead) //Output for the current leader that will be sent to hexes
-				);
+	.score1(p1ScoreCounter[3:0]), //Input player 1 current score
+	.score2(p2ScoreCounter[3:0]), //Input player 2 current score
+	.lead(outLead) //Output for the current leader that will be sent to hexes
+	);
+	
 	reg won;
 	reg flashEnable;
 	wire [4:0] pFlashOut, leadFlashOut;
 	//EndState es(outDC, p1ScoreCounter[3:0], p2ScoreCounter[3:0], won);		
 	Flasher flash(.p(4'hA),
-				  .lead(outLead[3:0]),
-				  .load(4'hB),
-				  .enable(flashEnable),
-				  .pFlash(pFlashOut),
-				  .leadFlash(leadFlashOut)
-				  );
+	.lead(outLead[3:0]),
+	.load(4'hB),
+	.enable(flashEnable),
+	.pFlash(pFlashOut),
+	.leadFlash(leadFlashOut)
+	);
 	SevenSegDecoder mydisplay11(HEX7, pFlashOut);
 	SevenSegDecoder my_display9(HEX6, leadFlashOut);//Display the lead on hex 6
 	
@@ -170,43 +168,38 @@ module project
 	always @(*)
 	begin
 		leadEnable <= 1'b1;
-		 //Conditions for timer
-		 if (outRD2 == 28'b0000000000000000000000000000)
-		 	begin
-				enable <= 1'b1;
-				flashEnable <= ~flashEnable ;
-		 	end
+		//Conditions for timer
+		if (outRD2 == 28'b0000000000000000000000000000)
+		begin
+			enable <= 1'b1;
+			flashEnable <= ~flashEnable ;
+		end
 		else
-			begin
-				enable <= 1'b0;
-			end
+		begin
+			enable <= 1'b0;
+		end
 		//Conditions for lead display
 		if (outDC == 8'b00000000)
-			begin
-				leadEnable <= 1'b1;
-				parload <= 1'b1;
-			end
+		begin
+			leadEnable <= 1'b1;
+			parload <= 1'b1;
+		end
 		else
-			begin
-				//leadEnable <= 1'b0;
-				parload <= 1'b0;
-			end
+		begin
+			//leadEnable <= 1'b0;
+			parload <= 1'b0;
+		end
 		if (outDC == 8'b11111111)
-			begin
-				//leadEnable <= 1'b1;
-				parload <= 1'b1;
-			end
+		begin
+			//leadEnable <= 1'b1;
+			parload <= 1'b1;
+		end
 		else
-			begin
-				//leadEnable <= 1'b0;
-				parload <= 1'b0;
-			end
+		begin
+			//leadEnable <= 1'b0;
+			parload <= 1'b0;
+		end
 	end
-	
-	
-	
-	
-	
 endmodule
 
 module EndState(
