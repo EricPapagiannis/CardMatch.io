@@ -1,26 +1,27 @@
 module project
 	(
-		CLOCK_50,						//	On Board 50 MHz
-        	KEY,
-		SW,
-		// The ports below are for the VGA output.  Do not change.
-		VGA_CLK,   						//	VGA Clock
-		VGA_HS,							//	VGA H_SYNC
-		VGA_VS,							//	VGA V_SYNC
-		VGA_BLANK_N,						//	VGA BLANK
-		VGA_SYNC_N,						//	VGA SYNC
-		VGA_R,   						//	VGA Red[9:0]
-		VGA_G,	 						//	VGA Green[9:0]
-		VGA_B,   						//	VGA Blue[9:0]
-		LEDR,
-		LEDG,
-		HEX0,
-		HEX2,
-		HEX4,
-		HEX5,
-		HEX6,
-		HEX7
+	CLOCK_50,						//	On Board 50 MHz
+	KEY,
+	SW,
+	// The ports below are for the VGA output.  Do not change.
+	VGA_CLK,   						//	VGA Clock
+	VGA_HS,							//	VGA H_SYNC
+	VGA_VS,							//	VGA V_SYNC
+	VGA_BLANK_N,						//	VGA BLANK
+	VGA_SYNC_N,						//	VGA SYNC
+	VGA_R,   						//	VGA Red[9:0]
+	VGA_G,	 						//	VGA Green[9:0]
+	VGA_B,   						//	VGA Blue[9:0]
+	LEDR,
+	LEDG,
+	HEX0,
+	HEX2,
+	HEX4,
+	HEX5,
+	HEX6,
+	HEX7
 	);
+	
 	input CLOCK_50;	// 50 MHz
 	input [17:0] SW;
 	input [3:0] KEY;
@@ -233,7 +234,7 @@ module Flasher(
 	begin
 	if (enable == 1'b1)
 	begin
-		pFlash <= load;
+	    pFlash <= load;
 		leadFlash <=load;
 	end
 	else
@@ -257,16 +258,15 @@ module FSM(
     localparam  choose_card1        = 4'd0,
                 choose_card1_wait   = 4'd1,
                 choose_card2        = 4'd2,
-				choose_card2_wait   = 4'd3,
+		choose_card2_wait   = 4'd3,
                 check_match 	    = 4'd4,
-				check_match_wait    = 4'd5;
+		check_match_wait    = 4'd5;
     
     // Next state logic aka our state table
     always@(*)
     begin: state_table
-            case (current_state)
-					 
-                choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Choose card 1 state
+	case (current_state)		 
+		choose_card1: next_state = go ? choose_card1_wait : choose_card1; // Choose card 1 state
 				
                 choose_card1_wait: next_state = go ? choose_card1_wait : choose_card2; // Choose card 1 wait state; Goes to choose card 2
 				
@@ -276,7 +276,7 @@ module FSM(
 				
                 check_match: next_state = go ? check_match_wait : check_match; // Check matching state
 					 
-					 check_match_wait: next_state = go ? check_match_wait : choose_card1; // Check matching wait state; goes to choose card 1 state
+		check_match_wait: next_state = go ? check_match_wait : choose_card1; // Check matching wait state; goes to choose card 1 state
 				
                 default:     next_state = choose_card1;
         endcase
@@ -295,21 +295,21 @@ module FSM(
             choose_card1: begin
                 card1 = 1'b1;
                 end
-	        choose_card1_wait: begin
+	    choose_card1_wait: begin
                 card1 = 1'b1; // Draw the card in this state
                 end
             choose_card2: begin
                 card2 = 1'b1;
                 end
-			choose_card2_wait: begin
+	    choose_card2_wait: begin
                 card2 = 1'b1; // Draw the card in this state
                 end
             check_match: begin
                 match_the_cards = 1'b1;
                 end
-			check_match_wait : begin
-				match_the_cards = 1'b1;
-				end
+	    check_match_wait : begin
+	        match_the_cards = 1'b1;
+		end
         // default:  n  // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals
