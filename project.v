@@ -452,11 +452,16 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 	reg cardDrawn;
 	reg countCard = 2'b00;
 
-
+		
 		always@(posedge clk)
 		begin
+			
 			cardDrawn = 1'b0;
 			colour_in = colour_in1;
+			// Draw a 18x28 rectangular card, but halfway through the x, change colour_in from
+			// colour_in1 to colour_in2. This design choice was to implement having > 8 pairs of cards
+			// because the VGA adapter only has 8 colours, so we split the cards in two colours to enable
+			// Having more pairs.
 			if (ycounter < 6'b011100)
 			begin
 				xcounter = xcounter + 6'b000001;
@@ -485,7 +490,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				
 				drawScreen = 6'b000000;
 			end
-
+			// Draw the card
 			if (~keys[1])
 			begin
 				drawScreen = 6'b000001;
@@ -495,10 +500,12 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			end
 			
 			
-			
+			// Cards to be drawn. Each with unique (xin, yin) coordinates.
+			// If ~keys[2], then flip the card back over (change colour_in1 and colour_in2 to black)
+			// Otherwise, assign the respective colours of the card
 			
 			// ### FIRST ### color = 011 is background
-			
+			// Card 17
 			if (switches[17]) // top row most left
 			begin
 				xin = 8'b00000111; //card coordinatescardDrawn = 1'b1;
@@ -519,7 +526,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b010;
 				end
 			end
-			
+			// Card 17
 			if (switches[16])
 			begin
 				xin = 8'b00100001; //card coordinates
@@ -541,7 +548,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				end
 			end
 			
-			
+			// Card 15
 			if (switches[15])
 			begin
 				xin = 8'b00111011; //card coordinates
@@ -561,7 +568,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b011;
 				end
 			end
-			
+			// Card 14
 			if (switches[14])
 			begin
 				xin = 8'b01010101; //card coordinates
@@ -581,7 +588,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b111;
 				end
 			end
-			
+			// Card 13
 			if (switches[13])
 			begin
 				xin = 8'b01101111; //card coordinates
@@ -601,7 +608,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b100;
 				end
 			end
-			
+			// Card 12
 			if (switches[12]) // top row most right
 			begin
 				xin = 8'b10001001; //card coordinates
@@ -623,7 +630,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			end
 			
 			// #### SECOND ROW ### b0101101
-
+			// Card 11
 			if (switches[11]) // second row most left
 			begin
 				xin = 8'b00000111; //card coordinates
@@ -643,7 +650,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b001;
 				end
 			end
-			
+			// Card 10
 			if (switches[10])
 			begin
 				xin = 8'b00100001; //card coordinates
@@ -663,7 +670,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b010;
 				end
 			end
-			
+			// Card 9
 			if (switches[9])
 			begin
 				xin = 8'b00111011; //card coordinates
@@ -683,7 +690,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b101;
 				end
 			end
-			
+			// Card 8
 			if (switches[8])
 			begin
 				xin = 8'b01010101; //card coordinates
@@ -703,7 +710,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b111;
 				end
 			end
-			
+			// Card 7
 			if (switches[7])
 			begin
 				xin = 8'b01101111; //card coordinates
@@ -723,7 +730,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b101;
 				end
 			end
-			
+			// Card 6
 			if (switches[6]) // second row most right
 			begin
 				xin = 8'b10001001; //card coordinates
@@ -744,8 +751,8 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				end
 			end
 			
-			// #### THIRD ROW ###b1010101
-
+			// #### THIRD ROW ###
+			// Card 5
 			if (switches[5]) // third row most left
 			begin
 				xin = 8'b00000111; //card coordinates
@@ -765,7 +772,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b111;
 				end
 			end
-			
+			// Card 4
 			if (switches[4])
 			begin
 				xin = 8'b00100001; //card coordinates
@@ -785,7 +792,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b011;
 				end
 			end
-			
+			// Card 3
 			if (switches[3])
 			begin
 				xin = 8'b00111011; //card coordinates
@@ -805,7 +812,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b111;
 				end
 			end
-			
+			// Card 2
 			if (switches[2])
 			begin
 				xin = 8'b01010101; //card coordinates
@@ -825,7 +832,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b100;
 				end
 			end
-			
+			// Card 1
 			if (switches[1])
 			begin
 				xin = 8'b01101111; //card coordinates
@@ -845,7 +852,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 					colour_in2 = 3'b001;
 				end
 			end
-			
+			// Card 0
 			if (switches[0]) // third row most right
 			begin
 				xin = 8'b10001001; //card coordinates
@@ -867,15 +874,15 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			end
 			
 		end // state_table
+	
+		// Assign the vga colour to be drawn what was decided to be colour_in from the always block
 		assign colour = colour_in;
+		// Increment both counters, starting from the (xin, yin) coordinates
 		assign x = xin + xcounter;
 		assign y = yin + ycounter;
+		// Assigning when to draw or not
 		assign writeEn = drawScreen;
-		// Instansiate datapath
-		// datapath d0(...);
-
-		// Instansiate FSM control
-		// control c0(...);
+		
 endmodule
 
 module ScoreCounterP1(enable, reset_n, clock, q, player);
