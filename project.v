@@ -442,7 +442,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 	output [6:0] y;
 	output writeEn;
 	reg [5:0] x_pos_count = 6'b000000;
-	reg [5:0] ycounter = 6'b100000;
+	reg [5:0] y_pos_count = 6'b100000;
 	reg [7:0] xin;
 	reg [6:0] yin;
 	reg [2:0] colour_in;
@@ -462,16 +462,16 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			// colour_in1 to colour_in2. This design choice was to implement having > 8 pairs of cards
 			// because the VGA adapter only has 8 colours, so we split the cards in two colours to enable
 			// Having more pairs.
-			if (ycounter < 6'b011100)
+			if (y_pos_count < 6'b011100)
 			begin
 				x_pos_count = x_pos_count + 6'b000001;
 				
 				if (x_pos_count >= 6'b010010)
 				begin
 					x_pos_count = 6'b000000;
-					ycounter = ycounter + 6'b000001;
+					y_pos_count = y_pos_count + 6'b000001;
 					
-					if (ycounter == 6'b011100)
+					if (y_pos_count == 6'b011100)
 					begin
 						drawScreen = 6'b000000;
 					end
@@ -495,7 +495,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 			begin
 				drawScreen = 6'b000001;
 				x_pos_count = 6'b000000;
-				ycounter = 6'b000000;
+				y_pos_count = 6'b000000;
 
 			end
 			
@@ -516,7 +516,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -537,7 +537,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -558,7 +558,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -578,7 +578,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -598,7 +598,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -618,7 +618,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -640,7 +640,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -660,7 +660,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -680,7 +680,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -700,7 +700,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -720,7 +720,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -740,7 +740,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -762,7 +762,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -782,7 +782,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -802,7 +802,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -822,7 +822,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -842,7 +842,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -862,7 +862,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 				begin
 					drawScreen = 6'b000001;
 					x_pos_count = 6'b000000;
-					ycounter = 6'b000000;
+					y_pos_count = 6'b000000;
 					colour_in1 = 3'b000;
 					colour_in2 = 3'b000;
 				end
@@ -879,7 +879,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 		assign colour = colour_in;
 		// Increment both counters, starting from the (xin, yin) coordinates
 		assign x = xin + x_pos_count;
-		assign y = yin + ycounter;
+		assign y = yin + y_pos_count;
 		// Assigning when to draw or not
 		assign writeEn = drawScreen;
 		
