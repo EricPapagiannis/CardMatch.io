@@ -1,9 +1,0 @@
-
-State Machine - |project|FSM:c0|current_state
-Name current_state.check_match_wait current_state.check_match current_state.choose_card2_wait current_state.choose_card2 current_state.choose_card1_wait current_state.choose_card1 
-current_state.choose_card1 0 0 0 0 0 0 
-current_state.choose_card1_wait 0 0 0 0 1 1 
-current_state.choose_card2 0 0 0 1 0 1 
-current_state.choose_card2_wait 0 0 1 0 0 1 
-current_state.check_match 0 1 0 0 0 1 
-current_state.check_match_wait 1 0 0 0 0 1 
