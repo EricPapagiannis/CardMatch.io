@@ -231,16 +231,16 @@ module Flasher(
 	
 	always @(*)
 	begin
-		if (enable == 1'b1)
-			begin
-				pFlash <= load;
-				leadFlash <=load;
-			end
-		else
-			begin
-				pFlash <= p;
-				leadFlash <= lead;
-			end
+	if (enable == 1'b1)
+	begin
+		pFlash <= load;
+		leadFlash <=load;
+	end
+	else
+	begin
+		pFlash <= p;
+		leadFlash <= lead;
+	end
 	end
 endmodule
 
