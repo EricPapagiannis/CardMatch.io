@@ -204,20 +204,20 @@ module EndState(
 	input [3:0] score1,
 	input [3:0] score2,
 	output reg won
-);
+	);
 	reg [3:0] scoreT;
+	
 	always@(*)
 	begin
-
 	scoreT <= score1 + score2;
-		if (timer == 8'b00000001)
-			begin
-				won <= 1'b1; 
-			end
-		else
-			begin 
-				won <= 1'b0;
-			end
+	if (timer == 8'b00000001)
+	begin
+		won <= 1'b1; 
+	end
+	else
+	begin 
+		won <= 1'b0;
+	end
 	end	
 	
 endmodule
