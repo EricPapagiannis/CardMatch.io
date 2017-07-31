@@ -878,15 +878,15 @@ module ScoreCounterP2(enable, reset_n, clock, q, player);
 	input clock, enable, reset_n;
 	input [1:0] player;
 	always @(posedge clock) // triggered every time clock rises
-		begin
-			if (reset_n == 1'b0) // when reset is high
-				q <= 1'b0; // q is set to 0
-			else if (enable == 1'b1 && player[0]) //when enabled
-				q <= q + 1'b1; // increment q
-			else if (enable == 1'b0) // hold when not enabled
-				q <= q;
-			else if (q == 4'b1001)//if it reaches 9
-				q <= 1'b0;//reset to 0
+	begin
+		if (reset_n == 1'b0) // when reset is high
+			q <= 1'b0; // q is set to 0
+		else if (enable == 1'b1 && player[0]) //when enabled
+			q <= q + 1'b1; // increment q
+		else if (enable == 1'b0) // hold when not enabled
+			q <= q;
+		else if (q == 4'b1001)//if it reaches 9
+			q <= 1'b0;//reset to 0
 	end
 endmodule
 
