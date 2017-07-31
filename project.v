@@ -324,7 +324,6 @@ module FSM(
 	end // state_FFS
 endmodule
 
-
 module datapath(
 	input clk,
 	input resetn,
@@ -917,7 +916,6 @@ module SevenSegDecoder_Timer(hex_out, inputs);
 	endcase
 endmodule
 
-
 module SevenSegDecoder(hex_out, inputs);
 	output reg [6:0] hex_out;
 	input [3:0] inputs;
@@ -945,13 +943,12 @@ module SevenSegDecoder(hex_out, inputs);
 	endcase
 endmodule
 
-
 module RateDivider(enable, reset_n, clock, q, d, ParLoad);
 	output reg [27:0] q; // declare q
 	input [27:0] d; // declare d
 	input clock, enable, reset_n, ParLoad;
 	always @(posedge clock) // triggered every time clock rises
-		begin
+	begin
 		if (reset_n == 1'b0) // when Clear b is 0
 			q <= 0; // q is set to 0
 		else if (ParLoad == 1'b1) // Check if parallel load
@@ -965,7 +962,6 @@ module RateDivider(enable, reset_n, clock, q, d, ParLoad);
 			q <= q; 
 	end
 endmodule
-
 
 module DisplayCounter(enable, reset_n, clock, val, d, ParLoad);
 	output reg [7:0] val; // declare q
