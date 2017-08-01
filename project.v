@@ -994,13 +994,13 @@ module DisplayLead(enable, score1, score2, lead);
 	input enable;
 	input [3:0] score1, score2;
 	always @(enable)
-		begin
-			if (score1 > score2) //If player1 is in the lead
-				lead <= 4'b0001;// Set the output to be 1
-			else if (score2 > score1) //If player2 is in the lead
-				lead <= 4'b0010; //Set the output to be 2
-			else // If there is a tie
-				lead <= 4'b0000; //Set the output to be 0
-		end
+	begin
+		if (score1 > score2) //If player1 is in the lead
+			lead <= 4'b0001;// Set the output to be 1
+		else if (score2 > score1) //If player2 is in the lead
+			lead <= 4'b0010; //Set the output to be 2
+		else // If there is a tie
+			lead <= 4'b0000; //Set the output to be 0
+	end
 	endmodule
 	
