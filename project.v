@@ -290,7 +290,6 @@ module FSM(
 	card1 = 1'b0;
 	card2 = 1'b0;
 	match_the_cards = 1'b0;
-
 	case (current_state)
 		choose_card1: begin
 			card1 = 1'b1;
@@ -344,6 +343,7 @@ module datapath(
 	reg [17:0] c1; // Register for the first card chosen
 	reg [17:0] c2; // Register for the second card chosen
 	reg mat; // Whether or not a matching set was attained
+	
 	always@(posedge clk)
 	begin
 		if (!resetn)
@@ -434,6 +434,7 @@ module vga_in(switches, keys, clk, x, y, colour, writeEn);
 	reg drawScreen = 1'b0;
 	reg cardDrawn;
 	reg countCard = 2'b00;
+	
 	always@(posedge clk)
 	begin
 		// Cards to be drawn. Each with unique (xin, yin) coordinates.
@@ -859,6 +860,7 @@ module ScoreCounterP1(enable, reset_n, clock, q, player);
 	output reg [3:0] q; // declare q
 	input clock, enable, reset_n;
 	input [1:0] player;
+	
 	always @(posedge clock) // triggered every time clock rises
 	begin
 		if (reset_n == 1'b0) // when reset is high
@@ -876,6 +878,7 @@ module ScoreCounterP2(enable, reset_n, clock, q, player);
 	output reg [3:0] q; // declare q
 	input clock, enable, reset_n;
 	input [1:0] player;
+	
 	always @(posedge clock) // triggered every time clock rises
 	begin
 		if (reset_n == 1'b0) // when reset is high
@@ -892,6 +895,7 @@ endmodule
 module SevenSegDecoder_Timer(hex_out, inputs);
 	output reg [6:0] hex_out;
 	input [3:0] inputs;
+	
 	always @(inputs)
 	case (inputs)
 		4'h0: hex_out = 7'b1000000;
@@ -919,6 +923,7 @@ endmodule
 module SevenSegDecoder(hex_out, inputs);
 	output reg [6:0] hex_out;
 	input [3:0] inputs;
+	
 	always @(inputs)
 	case (inputs)
 		4'h0: hex_out = 7'b1000000;
@@ -947,6 +952,7 @@ module RateDivider(enable, reset_n, clock, q, d, ParLoad);
 	output reg [27:0] q; // declare q
 	input [27:0] d; // declare d
 	input clock, enable, reset_n, ParLoad;
+	
 	always @(posedge clock) // triggered every time clock rises
 	begin
 		if (reset_n == 1'b0) // when Clear b is 0
@@ -967,19 +973,20 @@ module DisplayCounter(enable, reset_n, clock, val, d, ParLoad);
 	output reg [7:0] val; // declare q
 	input clock, enable, reset_n, ParLoad;
 	input [7:0] d;
+	
 	always @(posedge clock) // triggered every time clock rises
-		begin
-			if (reset_n == 1'b0) // when reset is high
-				val <= 8'b11111111; // q is set to 15
-			else if (enable == 1'b1) // when enabled
-				val <= val - 1'b1; // count down 1
-			else if (ParLoad == 1'b1) // Check if parallel load
-				val <= d;
-			else if (enable == 1'b0) // hold when not enabled
-				val <= val;
-			else if (val == 8'b00000000)//once it reaches 0, reset to 15
-				val <= 8'b11111111;
-		end
+	begin
+		if (reset_n == 1'b0) // when reset is high
+			val <= 8'b11111111; // q is set to 15
+		else if (enable == 1'b1) // when enabled
+			val <= val - 1'b1; // count down 1
+		else if (ParLoad == 1'b1) // Check if parallel load
+			val <= d;
+		else if (enable == 1'b0) // hold when not enabled
+			val <= val;
+		else if (val == 8'b00000000)//once it reaches 0, reset to 15
+			val <= 8'b11111111;
+	end
 endmodule
 
 module DisplayLead(enable, score1, score2, lead);
