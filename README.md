@@ -34,7 +34,8 @@ Project Title: CardMatch.io
 
 Project Description: 
 This will be a card matching game. The game will be multiplayer. The game begins with a 6 x 3 grid of face down cards while each player takes turns selecting a pair of cards. Card selection will be done using a joystick to navigate/select the given cards. Each player earns a point if they find a pair. Player’s turns are also timed using an internal clock. The 20 second timer will be displayed on two hex displays on the board. If a player does not select a pair of cards in time, the game will skip to the other player’s turn. Players are notified if it is their turn through a hex display on the board (i.e. 1 or 2) as well. The game ends when all pairs have been selected, and a winner is determined by whoever has the highest number of pairs. 
-Video URL: 
+
+Video URL: https://www.youtube.com/watch?v=ttuYTb8SfAY&feature=youtu.be
 
 Code URL (please upload a copy of this file to your repository at the end of the project as well, it will serve as a useful resource for future development):
 
